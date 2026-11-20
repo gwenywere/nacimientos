@@ -1,0 +1,1054 @@
+<!doctype html><html lang="en"><head><meta charset=utf8><title>Nacimientos 2006–2025</title><meta name="description" content="Live births in Spain in 2006, 2015 and 2025 from INE microdata."><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@500;600&display=swap">
+<style>
+/* Layout: sticky filter strip over a 12-column card grid; summary tiles first, detail charts below.
+   Colors: teal / violet / red series, teal ramp for order + density, gray ramp for ink. */
+:root {
+  --bg: #EDEFF0;
+  --surface: #FFFFFF;
+  --fg: #191B1C;
+  --fg-2: #595F61;
+  --muted: #7B8285;
+  --grid: color-mix(in oklab, #C2C9CC 40%, #FFFFFF);
+  --axis: #C2C9CC;
+  --border: rgba(25, 27, 28, 0.09);
+  --accent: #23726C;
+  --on-accent: #FFFFFF;
+  --s1: #40BFB6;
+  --s2: #7740BF;
+  --s3: #BF4049;
+  --ord1: #40BFB6; --ord2: #329992; --ord3: #23726C; --ord4: #144A46;
+  --seq0: #E0FEFA; --seq1: #50EADF; --seq2: #40BFB6; --seq3: #329992; --seq4: #23726C; --seq5: #144A46;
+  --f-display: "Space Grotesk", "Inter", system-ui, sans-serif;
+  --f-body: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  --r: 10px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #191B1C; --surface: color-mix(in oklab, #191B1C 80%, #383B3D);
+    --fg: #EDEFF0; --fg-2: #C2C9CC; --muted: #9BA3A8;
+    --grid: color-mix(in oklab, #383B3D 70%, #191B1C); --axis: #595F61; --border: rgba(237, 239, 240, 0.08);
+    --accent: #50EADF; --on-accent: #062623;
+    --s1: #40BFB6; --s2: #986CDC; --s3: #E66368;
+    --ord1: #23726C; --ord2: #329992; --ord3: #40BFB6; --ord4: #50EADF;
+    --seq0: #144A46; --seq1: #23726C; --seq2: #329992; --seq3: #40BFB6; --seq4: #50EADF; --seq5: #E0FEFA;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #191B1C; --surface: color-mix(in oklab, #191B1C 80%, #383B3D);
+  --fg: #EDEFF0; --fg-2: #C2C9CC; --muted: #9BA3A8;
+  --grid: color-mix(in oklab, #383B3D 70%, #191B1C); --axis: #595F61; --border: rgba(237, 239, 240, 0.08);
+  --accent: #50EADF; --on-accent: #062623;
+  --s1: #40BFB6; --s2: #986CDC; --s3: #E66368;
+  --ord1: #23726C; --ord2: #329992; --ord3: #40BFB6; --ord4: #50EADF;
+  --seq0: #144A46; --seq1: #23726C; --seq2: #329992; --seq3: #40BFB6; --seq4: #50EADF; --seq5: #E0FEFA;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--fg); font-family: var(--f-body); font-size: 14px; line-height: 1.5;
+}
+body::before {
+  content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--bg);
+}
+.wrap {
+  max-width: 1240px; margin: 0 auto;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+header.top { padding-block: 32px 18px; }
+.eyebrow {
+  font-family: var(--f-mono); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted);
+}
+h1 {
+  font-family: var(--f-display); font-weight: 600; font-size: clamp(28px, 4vw, 40px); line-height: 1.1;
+  margin: 6px 0 8px; letter-spacing: -0.01em; text-wrap: balance;
+}
+.lede { color: var(--fg-2); max-width: 68ch; margin: 0; }
+
+/* Filters */
+.filters {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5;
+  background: color-mix(in oklab, var(--bg) 92%, transparent); backdrop-filter: blur(6px);
+  border-bottom: 1px solid var(--border);
+}
+.filters .wrap { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 20px; padding-block: 10px; }
+.field { display: flex; align-items: center; gap: 8px; }
+.field > span { font-size: 12px; color: var(--fg-2); font-weight: 500; }
+.seg { display: inline-flex; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 2px; }
+.seg button {
+  font: inherit; font-size: 13px; border: 0; background: transparent; color: var(--fg-2);
+  padding: 5px 12px; border-radius: 6px; cursor: pointer;
+}
+.seg button:hover:not([aria-pressed="true"]):not(:disabled) { color: var(--fg); background: var(--bg); }
+.seg button[aria-pressed="true"] { background: var(--accent); color: var(--on-accent); font-weight: 600; }
+.seg button:disabled { opacity: 0.4; cursor: not-allowed; }
+.seg.seg-wrap { flex-wrap: wrap; }
+.seg.tabs button { font-family: var(--f-display); font-size: 14px; padding: 5px 16px; }
+.seg.tabs button[aria-selected="true"], .seg.tabs button[aria-selected="true"]:hover { background: var(--accent); color: var(--on-accent); font-weight: 600; }
+.seg.tabs button:hover:not([aria-selected="true"]) { color: var(--fg); background: var(--bg); }
+main.loading { opacity: 0.45; transition: opacity 0.15s; }
+select {
+  font: inherit; font-size: 13px; color: var(--fg); background: var(--surface);
+  border: 1px solid var(--border); border-radius: 8px; padding: 6px 10px; max-width: 220px;
+}
+.reset {
+  font: inherit; font-size: 13px; color: var(--accent); background: none; border: 0; cursor: pointer; padding: 4px 2px;
+  text-decoration: underline; text-underline-offset: 3px;
+}
+.status { margin-left: auto; font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
+button:focus-visible, select:focus-visible, summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* KPI tiles */
+.kpis { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 12px; padding-block: 20px 8px; }
+.kpi { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r); padding: 14px 16px; min-width: 0; }
+.kpi .label { font-size: 12px; color: var(--fg-2); }
+.kpi .value { font-family: var(--f-display); font-size: 28px; font-weight: 600; line-height: 1.15; margin-top: 4px; }
+.kpi .value small { font-size: 15px; font-weight: 500; color: var(--fg-2); margin-left: 2px; }
+.kpi .ref { font-size: 12px; color: var(--muted); margin-top: 2px; font-variant-numeric: tabular-nums; min-height: 18px; }
+.kpi .ref b { font-weight: 600; color: var(--fg-2); }
+
+/* Cards */
+.grid { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 12px; padding-block: 12px 24px; }
+.card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--r);
+  padding: 16px 18px 12px; min-width: 0; display: flex; flex-direction: column; gap: 6px;
+}
+.span-7 { grid-column: span 7; } .span-5 { grid-column: span 5; } .span-4 { grid-column: span 4; } .span-6 { grid-column: span 6; } .span-12 { grid-column: span 12; }
+.card h2 { font-family: var(--f-display); font-size: 16px; font-weight: 600; margin: 0; text-wrap: balance; }
+.card .sub { color: var(--fg-2); font-size: 12.5px; margin: 0; }
+.card .head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-start; gap: 8px 16px; }
+.card .vars { margin-top: auto; padding-top: 6px; font-family: var(--f-mono); font-size: 10.5px; color: var(--muted); letter-spacing: 0.02em; }
+.legend { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 12px; color: var(--fg-2); }
+.legend i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
+.legend i.line { height: 3px; border-radius: 2px; width: 14px; vertical-align: 3px; }
+.chart { width: 100%; position: relative; }
+.scroll-x { overflow-x: auto; }
+.empty { display: grid; place-items: center; min-height: 200px; color: var(--muted); font-size: 13px; text-align: center; padding: 16px; }
+
+svg text { font-family: var(--f-body); }
+.axis text { fill: var(--muted); font-size: 11px; font-variant-numeric: tabular-nums; }
+.axis line, .axis path { stroke: var(--axis); }
+.gridlines line { stroke: var(--grid); }
+.gridlines path { display: none; }
+.lbl { fill: var(--fg-2); font-size: 11.5px; font-variant-numeric: tabular-nums; }
+.lbl-strong { fill: var(--fg); font-size: 11.5px; font-weight: 600; }
+.ref-line { stroke: var(--fg-2); stroke-dasharray: 3 3; stroke-width: 1; }
+.halo { paint-order: stroke; stroke: var(--surface); stroke-width: 4px; stroke-linejoin: round; }
+
+#tip {
+  position: fixed; z-index: 20; pointer-events: none; background: var(--surface); color: var(--fg);
+  border: 1px solid var(--border); border-radius: 8px; padding: 8px 10px; font-size: 12px; line-height: 1.45;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.14); max-width: 260px; font-variant-numeric: tabular-nums;
+}
+#tip .t { font-weight: 600; margin-bottom: 2px; }
+#tip .row { display: flex; align-items: center; gap: 6px; justify-content: space-between; }
+#tip .row span:first-child { color: var(--fg-2); display: inline-flex; align-items: center; gap: 6px; }
+#tip .sw { width: 8px; height: 8px; border-radius: 2px; display: inline-block; }
+
+details { margin-top: 6px; }
+summary { cursor: pointer; font-size: 12.5px; color: var(--accent); width: fit-content; }
+.table-wrap { overflow-x: auto; margin-top: 8px; max-height: 420px; overflow-y: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 12.5px; font-variant-numeric: tabular-nums; }
+th, td { text-align: right; padding: 5px 10px; border-bottom: 1px solid var(--border); white-space: nowrap; }
+th:first-child, td:first-child { text-align: left; }
+th { position: sticky; top: 0; background: var(--surface); color: var(--fg-2); font-weight: 600; }
+
+footer { padding-block: 8px 40px; color: var(--muted); font-size: 12px; }
+footer p { max-width: 90ch; margin: 4px 0; }
+footer code { font-family: var(--f-mono); font-size: 11px; }
+footer a { color: var(--accent); text-underline-offset: 2px; }
+
+@media (max-width: 1000px) {
+  .kpis { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .span-7, .span-5, .span-6, .span-4 { grid-column: span 12; }
+}
+@media (max-width: 560px) {
+  .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .status { margin-left: 0; width: 100%; }
+  .kpi .value { font-size: 24px; }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<header class="top wrap">
+  <div class="eyebrow">INE · Movimiento Natural de la Población · microdatos de nacimientos</div>
+  <h1>Nacimientos <span class="yr">2025</span></h1>
+  <p class="lede">Every live birth registered in Spain in <span class="yr">2025</span>, one record per birth. Switch year with the tabs. Filter by where the mother was born and the province she lives in. Click a province in the ranking to filter by it.</p>
+</header>
+
+<div class="filters">
+  <div class="wrap">
+    <div class="field">
+      <span id="lbl-year">Year</span>
+      <div class="seg tabs" id="year" role="tablist" aria-labelledby="lbl-year">
+        <button type="button" role="tab" data-v="2025" aria-selected="true">2025</button>
+        <button type="button" role="tab" data-v="2015" aria-selected="false">2015</button>
+        <button type="button" role="tab" data-v="2006" aria-selected="false">2006</button>
+      </div>
+    </div>
+    <div class="field" role="group" aria-labelledby="lbl-origin">
+      <span id="lbl-origin">Mother born in</span>
+      <div class="seg" id="origin">
+        <button type="button" id="o-all" data-v="all" aria-pressed="true">All</button>
+        <button type="button" id="o-es" data-v="es" aria-pressed="false">Spain</button>
+        <button type="button" id="o-ab" data-v="ab" aria-pressed="false">Abroad</button>
+      </div>
+    </div>
+    <label class="field"><span>Province of residence</span>
+      <select id="prov"><option value="ES">All of Spain</option></select>
+    </label>
+    <button type="button" class="reset" id="reset" hidden>Clear filters</button>
+    <div class="status" id="status" aria-live="polite">Loading microdata…</div>
+  </div>
+</div>
+
+<main class="wrap">
+  <section class="kpis" id="kpis" aria-label="Summary"></section>
+
+  <section class="grid">
+    <article class="card span-12">
+      <div class="head">
+        <div><h2>Children per woman</h2><p class="sub" id="tfr-sub">Total fertility rate: the average number of children a woman would have at this year's birth rates for each age. All of Spain; the filters above don't apply.</p></div>
+      </div>
+      <div class="chart" id="c-tfr"></div>
+      <div class="vars" id="tfr-vars">EDADM · PAISNXM ÷ women aged 15–49 by age and country of birth (INE Estadística Continua de Población, table 56939)</div>
+    </article>
+    <article class="card span-7">
+      <div class="head">
+        <div><h2>Age of mother and father</h2><p class="sub" id="age-sub">Births by parent's age in completed years</p></div>
+        <div class="legend"><span><i class="line" style="background:var(--s1)"></i>Mother</span><span><i class="line" style="background:var(--s2)"></i>Father</span></div>
+      </div>
+      <div class="field">
+        <span id="lbl-agecont">Born in</span>
+        <div class="seg seg-wrap" id="agecont" role="group" aria-labelledby="lbl-agecont">
+          <button type="button" data-v="all" aria-pressed="true">All</button>
+          <button type="button" data-v="es" aria-pressed="false">Spain</button>
+          <button type="button" data-v="eu" aria-pressed="false">Rest of Europe</button>
+          <button type="button" data-v="af" aria-pressed="false">Africa</button>
+          <button type="button" data-v="am" aria-pressed="false">Americas</button>
+          <button type="button" data-v="as" aria-pressed="false">Asia</button>
+        </div>
+      </div>
+      <div class="chart" id="c-age"></div>
+      <div class="vars" id="age-vars">EDADM · EDADP</div>
+    </article>
+
+    <article class="card span-5">
+      <div class="head">
+        <div><h2>Birth order by mother's age</h2><p class="sub">Share of births that are the mother's 1st, 2nd, 3rd or later live-born child</p></div>
+      </div>
+      <div class="legend"><span><i style="background:var(--ord1)"></i>1st</span><span><i style="background:var(--ord2)"></i>2nd</span><span><i style="background:var(--ord3)"></i>3rd</span><span><i style="background:var(--ord4)"></i>4th or later</span></div>
+      <div class="chart" id="c-order"></div>
+      <div class="vars">SORDENV · EDADM</div>
+    </article>
+
+    <article class="card span-6">
+      <div class="head">
+        <div><h2>Caesarean, preterm and low weight by mother's age</h2><p class="sub">Percent of births in each age group</p></div>
+      </div>
+      <div class="legend"><span id="leg-ces"><i class="line" style="background:var(--s1)"></i>Caesarean</span><span><i class="line" style="background:var(--s2)"></i>Preterm (&lt;37 weeks)</span><span><i class="line" style="background:var(--s3)"></i>Low weight (&lt;2,500 g)</span></div>
+      <div class="chart" id="c-rates"></div>
+      <div class="vars">CESAREA · INTERSEM · PESON · EDADM</div>
+    </article>
+
+    <article class="card span-6">
+      <div class="head">
+        <div><h2>Births per day, by month</h2><p class="sub">Monthly births divided by the days in each month of <span class="yr">2025</span></p></div>
+      </div>
+      <div class="chart" id="c-month"></div>
+      <div class="vars">MESPAR</div>
+    </article>
+
+    <article class="card span-7">
+      <div class="head">
+        <div><h2>Gestation and birth weight</h2><p class="sub">Births by weeks of pregnancy and weight band (250 g). Color on a log scale. Dashed lines mark the preterm and low-weight thresholds.</p></div>
+        <div class="legend" id="heat-legend"></div>
+      </div>
+      <div class="chart" id="c-heat"></div>
+      <div class="vars">SEMANAS · PESON — births with both values recorded</div>
+    </article>
+
+    <article class="card span-5">
+      <div class="head">
+        <div><h2>Time since the previous child</h2><p class="sub">Second and later births, months since the previous birth (6-month bands)</p></div>
+      </div>
+      <div class="chart" id="c-interval"></div>
+      <div class="vars">INIHA · SORDENV &gt; 1</div>
+    </article>
+
+    <article class="card span-12">
+      <div class="head">
+        <div><h2>Provinces</h2><p class="sub" id="prov-sub">The selected measure by province, for the mother's origin chosen above</p></div>
+        <div class="seg" id="metric" role="group" aria-label="Measure">
+          <button type="button" id="m-n" data-v="n" aria-pressed="true">Births</button>
+          <button type="button" id="m-age" data-v="age" aria-pressed="false">Mother's age</button>
+          <button type="button" id="m-ces" data-v="ces" aria-pressed="false">Caesarean</button>
+          <button type="button" id="m-pre" data-v="pre" aria-pressed="false">Preterm</button>
+          <button type="button" id="m-ab" data-v="ab" aria-pressed="false">Mother born abroad</button>
+          <button type="button" id="m-both" data-v="both" aria-pressed="false">Both parents born abroad</button>
+          <button type="button" id="m-mix" data-v="mix" aria-pressed="false">Mixed couples</button>
+        </div>
+      </div>
+      <div class="chart" id="c-prov"></div>
+      <details>
+        <summary>Show as table</summary>
+        <div class="table-wrap"><table id="prov-table"></table></div>
+      </details>
+      <div class="vars">PROREM · province of the mother's residence</div>
+    </article>
+
+    <article class="card span-7">
+      <div class="head">
+        <div><h2 id="cty-title">Mother's country of birth</h2><p class="sub" id="cty-sub">Top 15 countries among mothers born abroad</p></div>
+      </div>
+      <div class="chart" id="c-countries"></div>
+      <div class="vars" id="cty-vars">PAISNXM</div>
+    </article>
+
+    <article class="card span-5">
+      <div class="head">
+        <div><h2>Mother's marital status</h2><p class="sub">Share of births</p></div>
+      </div>
+      <div class="chart" id="c-marital"></div>
+      <div class="vars">ECIVM · MULTIPLI</div>
+    </article>
+
+    <article class="card span-4">
+      <div class="head">
+        <div><h2 id="mix-title">Parents born in different countries</h2><p class="sub" id="mix-sub">Births where mother and father were born in different countries</p></div>
+      </div>
+      <div class="legend" style="gap:8px 12px">
+        <div class="seg" id="mixdef" role="group" aria-label="Compare parents by">
+          <button type="button" id="d-birth" data-v="birth" aria-pressed="true">Country of birth</button>
+          <button type="button" id="d-nat" data-v="nat" aria-pressed="false">Nationality</button>
+        </div>
+        <div class="seg" id="union" role="group" aria-label="Couples">
+          <button type="button" id="u-all" data-v="all" aria-pressed="true">All couples</button>
+          <button type="button" id="u-mar" data-v="mar" aria-pressed="false">Married</button>
+          <button type="button" id="u-unm" data-v="unm" aria-pressed="false">Unmarried</button>
+        </div>
+      </div>
+      <div class="chart" id="c-mixed"></div>
+      <div class="vars" id="mix-vars"></div>
+    </article>
+
+    <article class="card span-4">
+      <div class="head">
+        <div><h2 id="esM-title">Spanish-born mother, foreign-born father</h2><p class="sub" id="esM-sub">Father's country of birth</p></div>
+      </div>
+      <div class="chart" id="c-esM"></div>
+      <div class="vars" id="esM-vars">Top 10</div>
+    </article>
+
+    <article class="card span-4">
+      <div class="head">
+        <div><h2 id="esP-title">Foreign-born mother, Spanish-born father</h2><p class="sub" id="esP-sub">Mother's country of birth</p></div>
+      </div>
+      <div class="chart" id="c-esP"></div>
+      <div class="vars" id="esP-vars">Top 10</div>
+    </article>
+  </section>
+</main>
+
+<footer class="wrap">
+  <p>Source: <a href="https://ine.es/dyngs/INEbase/es/operacion.htm?c=Estadistica_C&amp;cid=1254736177007&amp;menu=resultados&amp;idp=1254735573002#_tabs-1254736195443" target="_blank" rel="noopener noreferrer">INE, Movimiento Natural de la Población</a>, microdata file <code id="src-file">MNPnacim_2025</code> (live births)<span id="src-note"></span>. Province is the mother's province of residence; births to mothers living abroad count in the Spain totals only. <span id="foot-origin">"Born abroad" uses the mother's country of birth, not her nationality.</span></p>
+  <p>Children per woman also uses women by age and country of birth from <a href="https://www.ine.es/jaxiT3/Tabla.htm?t=56939" target="_blank" rel="noopener noreferrer">INE, Estadística Continua de Población (table 56939)</a>.</p>
+  <p id="foot-missing"></p>
+</footer>
+
+<div id="tip" hidden></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+<script>
+const $ = (s) => document.querySelector(s);
+const fmt = d3.format(',');
+const pct = (v, d = 1) => (Number.isFinite(v) ? (v * 100).toFixed(d) + '%' : '–');
+const css = (n) => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const DAYS = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+const MONTHS_LONG = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+const ORIGIN_TXT = { all: 'all mothers', es: 'mothers born in Spain', ab: 'mothers born abroad' };
+const MARITAL = ['Married', 'Single', 'Separated or divorced', 'Widowed'];
+// The 2006 file (INE 1996 layout) has nationality but no country of birth, and no caesarean flag.
+const ORIGIN_NAT = { all: 'all mothers', es: 'Spanish mothers', ab: 'foreign mothers' };
+const byNat = () => !!(DATA && DATA.meta.avail && !DATA.meta.avail.birthCountry);
+const hasCes = () => !(DATA && DATA.meta.avail && !DATA.meta.avail.ces);
+const originTxt = (o) => (byNat() ? ORIGIN_NAT : ORIGIN_TXT)[o];
+const OLD_VARS = [[/CESAREA · /g, ''], [/SORDENV/g, 'NUMHV'], [/INTERSEM/g, 'MATURI'], [/SEMANAS/g, 'SEMGES'], [/INIHA/g, 'ININHA'],
+  [/PROREM/g, 'PROM'], [/PAISNXM/g, 'NACMAD'], [/PAISNACM/g, 'NACMAD'], [/PAISNACP/g, 'NACPAD'], [/ECIVM/g, 'CAS'], [/MULTIPLI/g, 'MULTI']];
+function mapVars() {
+  const old = DATA.meta.layout === '1996';
+  document.querySelectorAll('.vars').forEach((el) => {
+    if (!el.id) { if (el.dataset.orig == null) el.dataset.orig = el.textContent; el.textContent = el.dataset.orig; }
+    if (old) el.textContent = OLD_VARS.reduce((t, [re, v]) => t.replace(re, v), el.textContent);
+  });
+}
+function yearLabels() {
+  const nat = byNat();
+  $('#lbl-origin').textContent = nat ? "Mother's nationality" : 'Mother born in';
+  $('#o-es').textContent = nat ? 'Spanish' : 'Spain';
+  $('#o-ab').textContent = nat ? 'Foreign' : 'Abroad';
+  $('#lbl-agecont').textContent = nat ? 'Nationality' : 'Born in';
+  document.querySelector('#agecont button[data-v="es"]').textContent = nat ? 'Spanish' : 'Spain';
+  METRICS.ab.label = nat ? 'Foreign mother' : 'Mother born abroad';
+  $('#m-ab').textContent = METRICS.ab.label;
+  METRICS.both.label = nat ? 'Both parents foreign' : 'Both parents born abroad';
+  $('#m-both').textContent = METRICS.both.label;
+  $('#leg-ces').hidden = !hasCes();
+  $('#cty-title').textContent = nat ? "Mother's nationality" : "Mother's country of birth";
+  $('#cty-vars').textContent = nat ? 'PAISNACM' : 'PAISNXM'; // mapVars() renames to the 1996 layout's NACMAD
+  $('#cty-sub').textContent = nat ?'Top 15 nationalities among foreign mothers' : 'Top 15 countries among mothers born abroad';
+  $('#foot-origin').textContent = nat
+    ? `The ${state.year} file records nationality but not country of birth, so for ${state.year} "Spanish" and "Foreign" use the mother's nationality. Caesarean sections were not recorded, and marital status is only married / not married.`
+    : '"Born abroad" uses the mother\'s country of birth, not her nationality.';
+}
+
+let DATA = null;
+const state = { year: '2025', ageCont: 'all', origin: 'all', prov: 'ES', metric: 'n', mixDef: 'birth', union: 'all' };
+const YEARS = {
+  2025: { file: 'data.json', src: 'MNPnacim_2025', note: '' },
+  2015: { file: 'data-2015.json', src: 'Anonimizado Nacimientos sin causa.A2015', note: ', read with the 2016+ record layout' },
+  2006: { file: 'data-2006.json', src: 'NACIMIENTOS 2006', note: ', INE anonymised births layout used from 1996 (85-character records)' },
+};
+const CACHE = {};
+const UNION = { all: 'all couples', mar: 'married mothers', unm: 'unmarried mothers' };
+const UNION_ADJ = { all: 'Mixed couples', mar: 'Married mixed couples', unm: 'Unmarried mixed couples' };
+const MIX = {
+  birth: {
+    noun: 'country of birth', title: 'Parents born in different countries', sub: 'Births where mother and father were born in different countries',
+    vars: 'PAISNXM · PAISNXP · ECIVM', esLbl: 'Spanish-born',
+    dir: ['Spanish-born mother, foreign-born father', 'Foreign-born mother, Spanish-born father', 'Both foreign-born, different countries'],
+  },
+  nat: {
+    noun: 'nationality', title: 'Parents with different nationalities', sub: 'Births where mother and father have different nationalities', esLbl: 'Spanish',
+    vars: 'PAISNACM · PAISNACP · ECIVM',
+    dir: ['Spanish mother, foreign father', 'Foreign mother, Spanish father', 'Both foreign, different nationalities'],
+  },
+};
+const mixShare = (s) => { const m = s.mixed[state.mixDef][state.union]; return m.k ? m.d / m.k : NaN; };
+try { Object.assign(state, JSON.parse(localStorage.getItem('nac-state') || '{}')); } catch (e) {}
+if (!YEARS[state.year]) state.year = '2025';
+const saveState = () => { try { localStorage.setItem('nac-state', JSON.stringify(state)); } catch (e) {} };
+
+// INE writes "Coruña, A"; show "A Coruña"
+const provName = (code) => {
+  if (code === 'ES') return 'All of Spain';
+  const n = DATA.meta.provinces[code] || code;
+  const m = n.match(/^(.*),\s*(A|La|Las|Los|El|Illes|Les)$/);
+  return m ? `${m[2]} ${m[1]}` : n;
+};
+const sl = (o, p) => DATA.slices[`${o}|${p}`];
+const meanAge = (s) => s.n ? s.ageM.reduce((a, c, i) => a + c * (i + DATA.meta.mAge[0]), 0) / s.n : NaN;
+const meanP = (s) => { const t = d3.sum(s.ageP); return t ? s.ageP.reduce((a, c, i) => a + c * (i + DATA.meta.pAge[0]), 0) / t : NaN; };
+
+// ---------- tooltip ----------
+const tip = $('#tip');
+function showTip(ev, html) {
+  tip.innerHTML = html; tip.hidden = false;
+  const pad = 14, r = tip.getBoundingClientRect();
+  let x = ev.clientX + pad, y = ev.clientY + pad;
+  if (x + r.width > innerWidth - 8) x = ev.clientX - r.width - pad;
+  if (y + r.height > innerHeight - 8) y = ev.clientY - r.height - pad;
+  tip.style.left = Math.max(8, x) + 'px'; tip.style.top = Math.max(8, y) + 'px';
+}
+const hideTip = () => { tip.hidden = true; };
+const row = (label, value, color) =>
+  `<div class="row"><span>${color ? `<i class="sw" style="background:${color}"></i>` : ''}${label}</span><b>${value}</b></div>`;
+
+// ---------- drawing helpers ----------
+function frame(el, height, m) {
+  el.innerHTML = '';
+  const W = el.clientWidth;
+  const svg = d3.select(el).append('svg').attr('width', W).attr('height', height).attr('viewBox', `0 0 ${W} ${height}`).attr('role', 'img');
+  const g = svg.append('g').attr('transform', `translate(${m.l},${m.t})`);
+  return { svg, g, w: Math.max(10, W - m.l - m.r), h: height - m.t - m.b };
+}
+const colPath = (x, y, w, h, r = 4) => {
+  if (h <= 0 || w <= 0) return '';
+  r = Math.min(r, w / 2, h);
+  return `M${x},${y + h}V${y + r}Q${x},${y} ${x + r},${y}H${x + w - r}Q${x + w},${y} ${x + w},${y + r}V${y + h}Z`;
+};
+const barPath = (x, y, w, h, r = 4) => {
+  if (h <= 0 || w <= 0) return '';
+  r = Math.min(r, h / 2, w);
+  return `M${x},${y}H${x + w - r}Q${x + w},${y} ${x + w},${y + r}V${y + h - r}Q${x + w},${y + h} ${x + w - r},${y + h}H${x}Z`;
+};
+function yGrid(g, y, w, ticks, format) {
+  g.append('g').attr('class', 'gridlines').call(d3.axisLeft(y).ticks(ticks).tickSize(-w).tickFormat(''));
+  g.append('g').attr('class', 'axis').call(d3.axisLeft(y).ticks(ticks).tickSize(0).tickPadding(8).tickFormat(format)).select('.domain').remove();
+}
+function emptyState(el, msg) { el.innerHTML = `<div class="empty">${msg}</div>`; }
+
+// ---------- KPIs ----------
+function renderKpis(s) {
+  const ref = state.prov !== 'ES' ? sl(state.origin, 'ES') : state.origin !== 'all' ? sl('all', 'ES') : null;
+  const refLbl = state.prov !== 'ES' ? (state.origin === 'all' ? 'Spain' : 'Spain, same origin') : 'all mothers';
+  const items = [
+    ['Births', (x) => x.n, (v) => fmt(v), null],
+    ["Mother's mean age", meanAge, (v) => v.toFixed(1), 'years'],
+    ['First child', (x) => x.first / x.n, (v) => pct(v), null],
+    ['Caesarean', (x) => x.ces / x.n, (v) => pct(v), null],
+    ['Preterm (<37 weeks)', (x) => x.pre / x.n, (v) => pct(v), null],
+    ['Low weight (<2,500 g)', (x) => x.lbw / x.wKnown, (v) => pct(v), null],
+  ];
+  $('#kpis').innerHTML = items.map(([label, f, show, unit], i) => {
+    if (label === 'Caesarean' && !hasCes()) return `<div class="kpi"><div class="label">${label}</div><div class="value">–</div><div class="ref">Not recorded in ${state.year}</div></div>`;
+    const v = s.n ? f(s) : NaN;
+    let refTxt = '';
+    if (ref && i > 0) refTxt = `${refLbl}: <b>${show(f(ref))}</b>`;
+    else if (ref && i === 0) refTxt = `${pct(s.n / ref.n)} of ${refLbl === 'all mothers' ? 'all births' : refLbl}`;
+    else if (i === 0) refTxt = `${fmt(DATA.meta.missing.residesAbroad)} to mothers living abroad`;
+    return `<div class="kpi"><div class="label">${label}</div><div class="value">${Number.isFinite(v) ? show(v) : '–'}${unit && Number.isFinite(v) ? `<small>${unit}</small>` : ''}</div><div class="ref">${refTxt}</div></div>`;
+  }).join('');
+}
+
+// ---------- 1. Age of mother and father ----------
+function drawAge(s) {
+  const el = $('#c-age');
+  if (!s.n) return emptyState(el, 'No births in this selection.');
+  const { mAge, pAge } = DATA.meta;
+  const k = state.ageCont, nat = byNat();
+  const where = { es: nat ? 'with Spanish nationality' : 'born in Spain', eu: nat ? 'from the rest of Europe' : 'born in the rest of Europe',
+    af: nat ? 'from Africa' : 'born in Africa', am: nat ? 'from the Americas' : 'born in the Americas', as: nat ? 'from Asia' : 'born in Asia' }[k];
+  $('#age-sub').textContent = k === 'all' ? "Births by parent's age in completed years"
+    : `Mothers and fathers ${where}, by age in completed years. Each parent is grouped by their own ${nat ? 'nationality' : 'country of birth'}.`;
+  $('#age-vars').textContent = k === 'all' ? 'EDADM · EDADP' : `EDADM · EDADP · ${nat ? 'PAISNACM · PAISNACP' : 'PAISNXM · PAISNXP'}`;
+  const am = k === 'all' || !s.ageMc ? s.ageM : s.ageMc[k], ap = k === 'all' || !s.agePc ? s.ageP : s.agePc[k];
+  if (!d3.sum(am) && !d3.sum(ap)) return emptyState(el, `No parents ${where} in this selection.`);
+  const mean = (arr, o) => { const t = d3.sum(arr); return t ? arr.reduce((acc, c, i) => acc + c * (i + o), 0) / t : NaN; };
+  const M = am.map((c, i) => ({ a: i + mAge[0], c }));
+  const P = ap.map((c, i) => ({ a: i + pAge[0], c }));
+  const { svg, g, w, h } = frame(el, 280, { t: 22, r: 12, b: 28, l: 48 });
+  svg.attr('aria-label', 'Distribution of mother and father ages');
+  const x = d3.scaleLinear([14, 70], [0, w]);
+  const y = d3.scaleLinear([0, d3.max([...M, ...P], (d) => d.c) * 1.12], [h, 0]).nice();
+  yGrid(g, y, w, 4, d3.format('~s'));
+  g.append('g').attr('class', 'axis').attr('transform', `translate(0,${h})`).call(d3.axisBottom(x).ticks(8).tickSizeOuter(0));
+  const vis = (arr) => arr.filter((d) => d.a >= 14 && d.a <= 70);
+  const series = [[vis(M), css('--s1'), 'Mother', mean(am, mAge[0])], [vis(P), css('--s2'), 'Father', mean(ap, pAge[0])]];
+  for (const [d, color] of series) {
+    g.append('path').datum(d).attr('fill', color).attr('opacity', 0.12)
+      .attr('d', d3.area().x((p) => x(p.a)).y0(h).y1((p) => y(p.c)).curve(d3.curveMonotoneX));
+    g.append('path').datum(d).attr('fill', 'none').attr('stroke', color).attr('stroke-width', 2).attr('stroke-linejoin', 'round')
+      .attr('d', d3.line().x((p) => x(p.a)).y((p) => y(p.c)).curve(d3.curveMonotoneX));
+  }
+  // direct labels at each peak: mother to the left, father to the right
+  series.forEach(([d, , name, mean], i) => {
+    const pk = d3.greatest(d, (p) => p.c);
+    if (!pk || !pk.c) return;
+    g.append('text').attr('class', 'lbl-strong').attr('x', x(pk.a) + (i ? 8 : -8)).attr('y', y(pk.c) - 6)
+      .attr('text-anchor', i ? 'start' : 'end').text(`${name} · mean ${mean.toFixed(1)}`);
+  });
+  const focus = g.append('g').style('display', 'none');
+  focus.append('line').attr('y1', 0).attr('y2', h).attr('stroke', css('--axis'));
+  const dots = series.map(([, color]) => focus.append('circle').attr('r', 4.5).attr('fill', color).attr('stroke', css('--surface')).attr('stroke-width', 2));
+  g.append('rect').attr('width', w).attr('height', h).attr('fill', 'transparent')
+    .on('mousemove', (ev) => {
+      const a = Math.round(x.invert(d3.pointer(ev)[0]));
+      const m = M.find((d) => d.a === a), p = P.find((d) => d.a === a);
+      focus.style('display', null).attr('transform', `translate(${x(a)},0)`);
+      [m, p].forEach((d, i) => dots[i].attr('cy', y(d ? d.c : 0)).style('display', d ? null : 'none'));
+      showTip(ev, `<div class="t">Age ${a}</div>${row('Mothers', fmt(m ? m.c : 0), css('--s1'))}${row('Fathers', fmt(p ? p.c : 0), css('--s2'))}`);
+    })
+    .on('mouseleave', () => { focus.style('display', 'none'); hideTip(); });
+}
+
+// ---------- 2. Birth order by age group ----------
+function drawOrder(s) {
+  const el = $('#c-order');
+  if (!s.n) return emptyState(el, 'No births in this selection.');
+  const groups = DATA.meta.ageGroups, colors = ['--ord1', '--ord2', '--ord3', '--ord4'].map(css);
+  const names = ['1st child', '2nd child', '3rd child', '4th or later'];
+  const { svg, g, w, h } = frame(el, 262, { t: 8, r: 6, b: 40, l: 40 });
+  svg.attr('aria-label', 'Birth order share by mother age group');
+  const x = d3.scaleBand(groups, [0, w]).padding(0.22);
+  const y = d3.scaleLinear([0, 1], [h, 0]);
+  yGrid(g, y, w, 4, d3.format('.0%'));
+  g.append('g').attr('class', 'axis').attr('transform', `translate(0,${h})`).call(d3.axisBottom(x).tickSizeOuter(0).tickSize(0).tickPadding(8));
+  g.append('text').attr('class', 'lbl').attr('x', w / 2).attr('y', h + 34).attr('text-anchor', 'middle').text("Mother's age");
+  groups.forEach((grp, gi) => {
+    const tot = s.byAge.n[gi];
+    if (!tot) return;
+    let acc = 0;
+    for (let k = 0; k < 4; k++) {
+      const v = s.byAge.order[k][gi] / tot;
+      const y0 = y(acc), y1 = y(acc + v);
+      acc += v;
+      if (v <= 0) continue;
+      const top = k === 3 || acc >= 0.9999;
+      const seg = g.append('path').attr('fill', colors[k]).attr('stroke', css('--surface')).attr('stroke-width', 2)
+        .attr('d', top ? colPath(x(grp), y1, x.bandwidth(), y0 - y1) : `M${x(grp)},${y1}h${x.bandwidth()}V${y0}H${x(grp)}Z`);
+      seg.on('mousemove', (ev) => showTip(ev, `<div class="t">Mother aged ${grp}</div>${row(names[k], pct(v), colors[k])}${row('Births', fmt(s.byAge.order[k][gi]))}${row('All births in group', fmt(tot))}`))
+        .on('mouseleave', hideTip);
+    }
+  });
+}
+
+// ---------- 3. Rates by age group ----------
+function drawRates(s) {
+  const el = $('#c-rates');
+  if (!s.n) return emptyState(el, 'No births in this selection.');
+  const groups = DATA.meta.ageGroups, b = s.byAge;
+  const defs = [
+    ['Caesarean', css('--s1'), groups.map((_, i) => b.ces[i] / b.n[i])],
+    ['Preterm', css('--s2'), groups.map((_, i) => b.pre[i] / b.n[i])],
+    ['Low weight', css('--s3'), groups.map((_, i) => b.lbw[i] / b.wKnown[i])],
+  ].filter(([name]) => name !== 'Caesarean' || hasCes());
+  const { svg, g, w, h } = frame(el, 262, { t: 12, r: 118, b: 40, l: 40 });
+  svg.attr('aria-label', 'Caesarean, preterm and low weight rates by mother age group');
+  const x = d3.scalePoint(groups, [0, w]).padding(0.4);
+  const max = d3.max(defs.flatMap((d) => d[2].filter(Number.isFinite)));
+  const y = d3.scaleLinear([0, (max || 0.1) * 1.12], [h, 0]).nice();
+  yGrid(g, y, w, 5, d3.format('.0%'));
+  g.append('g').attr('class', 'axis').attr('transform', `translate(0,${h})`).call(d3.axisBottom(x).tickSize(0).tickPadding(8)).select('.domain').attr('stroke', css('--axis'));
+  g.append('text').attr('class', 'lbl').attr('x', w / 2).attr('y', h + 34).attr('text-anchor', 'middle').text("Mother's age");
+  const ends = [];
+  defs.forEach(([name, color, vals]) => {
+    const pts = vals.map((v, i) => ({ g: groups[i], v })).filter((p) => Number.isFinite(p.v));
+    g.append('path').datum(pts).attr('fill', 'none').attr('stroke', color).attr('stroke-width', 2)
+      .attr('d', d3.line().x((p) => x(p.g)).y((p) => y(p.v)));
+    g.selectAll(null).data(pts).join('circle').attr('cx', (p) => x(p.g)).attr('cy', (p) => y(p.v)).attr('r', 4)
+      .attr('fill', color).attr('stroke', css('--surface')).attr('stroke-width', 2);
+    const last = pts[pts.length - 1];
+    if (last) ends.push({ name, y: y(last.v), v: last.v });
+  });
+  ends.sort((a, b2) => a.y - b2.y);
+  for (let i = 1; i < ends.length; i++) ends[i].y = Math.max(ends[i].y, ends[i - 1].y + 14);
+  ends.forEach((e) => g.append('text').attr('class', 'lbl').attr('x', w + 10).attr('y', e.y).attr('dy', '0.35em').text(`${e.name} ${pct(e.v, 0)}`));
+  const step = x.step();
+  groups.forEach((grp, i) => {
+    g.append('rect').attr('x', x(grp) - step / 2).attr('width', step).attr('height', h).attr('fill', 'transparent')
+      .on('mousemove', (ev) => showTip(ev, `<div class="t">Mother aged ${grp}</div>` +
+        defs.map(([name, color, vals]) => row(name, pct(vals[i]), color)).join('') + row('Births', fmt(b.n[i]))))
+      .on('mouseleave', hideTip);
+  });
+}
+
+// ---------- 4. Births per day by month ----------
+function drawMonth(s) {
+  const el = $('#c-month');
+  if (!s.n) return emptyState(el, 'No births in this selection.');
+  const d = s.month.map((c, i) => ({ m: i, c, pd: c / DAYS[i] }));
+  const avg = s.n / 365;
+  const { svg, g, w, h } = frame(el, 262, { t: 16, r: 8, b: 26, l: 44 });
+  svg.attr('aria-label', 'Average births per day in each month');
+  const x = d3.scaleBand(d3.range(12), [0, w]).padding(0.25);
+  const y = d3.scaleLinear([0, d3.max(d, (p) => p.pd) * 1.3], [h, 0]).nice();
+  yGrid(g, y, w, 4, d3.format(',~r'));
+  g.append('g').attr('class', 'axis').attr('transform', `translate(0,${h})`).call(d3.axisBottom(x).tickFormat((i) => MONTHS[i]).tickSize(0).tickPadding(8)).select('.domain').attr('stroke', css('--axis'));
+  g.selectAll(null).data(d).join('path').attr('fill', css('--s1')).attr('d', (p) => colPath(x(p.m), y(p.pd), x.bandwidth(), h - y(p.pd)))
+    .on('mousemove', (ev, p) => showTip(ev, `<div class="t">${MONTHS_LONG[p.m]} ${DATA.meta.year}</div>${row('Births', fmt(p.c))}${row('Per day', p.pd.toFixed(1))}${row('vs year average', d3.format('+.1%')(p.pd / avg - 1))}`))
+    .on('mouseleave', hideTip);
+  g.append('line').attr('class', 'ref-line').attr('x1', 0).attr('x2', w).attr('y1', y(avg)).attr('y2', y(avg));
+  g.append('text').attr('class', 'lbl halo').attr('x', w).attr('y', y(d3.max(d, (p) => p.pd)) - 8).attr('text-anchor', 'end').text(`dashed line: year average, ${avg.toFixed(1)} per day`);
+}
+
+// ---------- 5. Heatmap weeks × weight ----------
+function drawHeat(s) {
+  const el = $('#c-heat');
+  const { weeks, wEdges } = DATA.meta;
+  const wk = d3.range(weeks[0], weeks[1] + 1);
+  const bins = d3.range(wEdges.length + 1);
+  const binLbl = (b) => b === 0 ? `under ${fmt(wEdges[0])} g` : b === wEdges.length ? `${fmt(wEdges[b - 1])} g or more` : `${fmt(wEdges[b - 1])}–${fmt(wEdges[b] - 1)} g`;
+  const cells = [];
+  let tot = 0;
+  s.heat.forEach((r, i) => r.forEach((c, b) => { tot += c; if (c > 0) cells.push({ wk: wk[i], b, c }); }));
+  if (!tot) { $('#heat-legend').innerHTML = ''; return emptyState(el, 'No births with weeks and weight recorded.'); }
+  const { svg, g, w, h } = frame(el, 320, { t: 8, r: 10, b: 38, l: 52 });
+  svg.attr('aria-label', 'Heatmap of births by gestation weeks and birth weight');
+  const x = d3.scaleBand(wk, [0, w]).paddingInner(0.08);
+  const y = d3.scaleBand(bins, [h, 0]).paddingInner(0.08);
+  const ramp = ['--seq0', '--seq1', '--seq2', '--seq3', '--seq4', '--seq5'].map(css);
+  const max = d3.max(cells, (c) => c.c);
+  const color = d3.scaleSequentialLog([1, Math.max(2, max)], d3.interpolateRgbBasis(ramp));
+  g.append('g').attr('class', 'axis').attr('transform', `translate(0,${h})`)
+    .call(d3.axisBottom(x).tickValues(wk.filter((v) => v % 2 === 0)).tickFormat((v) => v === weeks[0] ? `≤${v}` : v).tickSize(0).tickPadding(6)).select('.domain').remove();
+  g.append('g').attr('class', 'axis')
+    .call(d3.axisLeft(y).tickValues(bins.filter((b) => b > 0 && wEdges[b - 1] % 1000 === 0)).tickFormat((b) => `${wEdges[b - 1] / 1000} kg`).tickSize(0).tickPadding(6)).select('.domain').remove();
+  g.append('text').attr('class', 'lbl').attr('x', w / 2).attr('y', h + 32).attr('text-anchor', 'middle').text('Weeks of pregnancy');
+  g.selectAll(null).data(cells).join('rect').attr('x', (c) => x(c.wk)).attr('y', (c) => y(c.b)).attr('width', x.bandwidth()).attr('height', y.bandwidth())
+    .attr('rx', 2).attr('fill', (c) => color(c.c))
+    .on('mousemove', (ev, c) => showTip(ev, `<div class="t">${c.wk === weeks[0] ? `${c.wk} weeks or fewer` : `${c.wk} weeks`} · ${binLbl(c.b)}</div>${row('Births', fmt(c.c))}${row('Share of recorded', pct(c.c / tot, 2))}`))
+    .on('mouseleave', hideTip);
+  // thresholds: 37 weeks (preterm), 2,500 g (low weight)
+  const x37 = x(37) - (x.step() - x.bandwidth()) / 2;
+  const yLbw = y(wEdges.indexOf(2500) + 1) + y.bandwidth() + (y.step() - y.bandwidth()) / 2;
+  g.append('line').attr('class', 'ref-line').attr('x1', x37).attr('x2', x37).attr('y1', 0).attr('y2', h);
+  g.append('line').attr('class', 'ref-line').attr('x1', 0).attr('x2', w).attr('y1', yLbw).attr('y2', yLbw);
+  g.append('text').attr('class', 'lbl').attr('x', x37 - 4).attr('y', 10).attr('text-anchor', 'end').text('← preterm');
+  g.append('text').attr('class', 'lbl').attr('x', 4).attr('y', yLbw + 13).text('↓ under 2,500 g');
+  const gid = 'heatgrad';
+  $('#heat-legend').innerHTML = `<span style="display:inline-flex;align-items:center;gap:6px">1
+    <svg width="90" height="10" aria-hidden="true"><defs><linearGradient id="${gid}">${ramp.map((c, i) => `<stop offset="${i / (ramp.length - 1)}" stop-color="${c}"/>`).join('')}</linearGradient></defs><rect width="90" height="10" rx="3" fill="url(#${gid})"/></svg>${fmt(max)} births</span>`;
+}
+
+// ---------- 6. Interval since previous child ----------
+function drawInterval(s) {
+  const el = $('#c-interval');
+  const { intBin, intMax } = DATA.meta;
+  const tot = d3.sum(s.interval);
+  if (!tot) return emptyState(el, 'No second or later births in this selection.');
+  const d = s.interval.map((c, i) => ({ i, c, lo: i * intBin }));
+  let acc = 0, medBin = 0;
+  for (const p of d) { acc += p.c; if (acc >= tot / 2) { medBin = p.i; break; } }
+  const { svg, g, w, h } = frame(el, 280, { t: 22, r: 8, b: 40, l: 44 });
+  svg.attr('aria-label', 'Months since previous child');
+  const x = d3.scaleBand(d.map((p) => p.i), [0, w]).padding(0.12);
+  const y = d3.scaleLinear([0, d3.max(d, (p) => p.c) * 1.12], [h, 0]).nice();
+  yGrid(g, y, w, 4, d3.format('~s'));
+  g.append('g').attr('class', 'axis').attr('transform', `translate(0,${h})`)
+    .call(d3.axisBottom(x).tickValues(d.map((p) => p.i).filter((i) => (i * intBin) % 24 === 0)).tickFormat((i) => i * intBin >= intMax ? `${intMax / 12}+ y` : `${(i * intBin) / 12} y`).tickSize(0).tickPadding(8))
+    .select('.domain').attr('stroke', css('--axis'));
+  g.append('text').attr('class', 'lbl').attr('x', w / 2).attr('y', h + 34).attr('text-anchor', 'middle').text('Years since the previous birth');
+  const lbl = (p) => p.lo >= intMax ? `${intMax}+ months` : `${p.lo}–${p.lo + intBin} months`;
+  g.selectAll(null).data(d).join('path').attr('fill', (p) => p.i === medBin ? css('--s2') : css('--s1'))
+    .attr('d', (p) => colPath(x(p.i), y(p.c), x.bandwidth(), h - y(p.c), 3))
+    .on('mousemove', (ev, p) => showTip(ev, `<div class="t">${lbl(p)}</div>${row('Births', fmt(p.c))}${row('Share', pct(p.c / tot))}`))
+    .on('mouseleave', hideTip);
+  const mp = d[medBin];
+  g.append('text').attr('class', 'lbl-strong').attr('x', x(medBin) + x.bandwidth() / 2).attr('y', y(mp.c) - 8)
+    .attr('text-anchor', x(medBin) > w * 0.6 ? 'end' : 'start').text(`median: ${lbl(mp)}`);
+}
+
+// ---------- 7. Provinces ----------
+const METRICS = {
+  n: { label: 'Births', f: (o, p) => sl(o, p).n, show: (v) => fmt(v), axis: d3.format('~s') },
+  age: { label: "Mother's mean age", f: (o, p) => meanAge(sl(o, p)), show: (v) => v.toFixed(1), axis: (v) => v },
+  ces: { label: 'Caesarean', f: (o, p) => sl(o, p).ces / sl(o, p).n, show: (v) => pct(v), axis: d3.format('.0%') },
+  pre: { label: 'Preterm', f: (o, p) => sl(o, p).pre / sl(o, p).n, show: (v) => pct(v), axis: d3.format('.0%') },
+  ab: { label: 'Mother born abroad', f: (o, p) => sl('ab', p).n / sl('all', p).n, show: (v) => pct(v), axis: d3.format('.0%') },
+  // share of births with both parents' country recorded where neither was born in Spain (2006: neither is Spanish)
+  both: { label: 'Both parents born abroad', f: (o, p) => { const g = sl('all', p).mixed[byNat() ? 'nat' : 'birth'].all; return g.k ? g.ab / g.k : NaN; }, show: (v) => pct(v), axis: d3.format('.0%') },
+  mix: { label: 'Mixed couples', f: (o, p) => mixShare(sl(o, p)), show: (v) => pct(v), axis: d3.format('.0%') },
+};
+function drawProvTable() {
+  const codes = Object.keys(DATA.meta.provinces);
+  const all = codes.map((c) => ({ c, s: sl(state.origin, c) })).sort((a, b) => b.s.n - a.s.n);
+  $('#prov-table').innerHTML = `<thead><tr><th>Province</th><th>Births</th><th>Mother's mean age</th><th>Caesarean</th><th>Preterm</th><th>Low weight</th><th>${METRICS.ab.label}</th><th>${METRICS.both.label}</th><th>Mixed couples (${UNION[state.union]}, ${MIX[state.mixDef].noun})</th></tr></thead><tbody>` +
+    all.map(({ c, s }) => `<tr><td>${provName(c)}</td><td>${fmt(s.n)}</td><td>${s.n ? meanAge(s).toFixed(1) : '–'}</td><td>${hasCes() ? pct(s.ces / s.n) : '–'}</td><td>${pct(s.pre / s.n)}</td><td>${pct(s.lbw / s.wKnown)}</td><td>${pct(sl('ab', c).n / sl('all', c).n)}</td><td>${pct(METRICS.both.f('all', c))}</td><td>${pct(mixShare(s))}</td></tr>`).join('') + '</tbody>';
+}
+// ---------- Children per woman (computed: births by mother's age ÷ women of that age, summed over 15–49) ----------
+let TFR = null;
+fetch('tfr.json').then((r) => { if (!r.ok) throw new Error(r.status); return r.json(); })
+  .then((t) => { TFR = t; renderAll(); })
+  .catch(() => { TFR = false; renderAll(); });
+function drawTfr() {
+  const el = $('#c-tfr');
+  if (TFR === null) return emptyState(el, 'Loading…');
+  const T = TFR && TFR[state.year];
+  if (!T) return emptyState(el, `Children per woman is not available for ${state.year}.`);
+  const nat = T.basis === 'nationality';
+  const names = nat
+    ? { all: 'All women', es: 'Spanish nationality', ab: 'Foreign nationality', eu: 'Rest of Europe', af: 'Africa', am: 'Americas', as: 'Asia' }
+    : { all: 'All women', es: 'Born in Spain', ab: 'Born abroad', eu: 'Rest of Europe', af: 'Africa', am: 'Americas', as: 'Asia' };
+  const order = ['all', 'es', 'ab', 'eu', 'af', 'am', 'as'];
+  const d = order.filter((k) => T.groups[k]).map((k) => ({ k, name: names[k], ...T.groups[k], sub: ['eu', 'af', 'am', 'as'].includes(k) }));
+  const popDate = new Date(T.popDate + 'T00:00:00').toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+  $('#tfr-sub').textContent = `Total fertility rate in ${state.year}: the average number of children a woman would have at this year's birth rates for each age, by her ${nat ? 'nationality' : 'country of birth'}. All of Spain; the filters above don't apply.`;
+  $('#tfr-vars').textContent = `${nat ? 'EDADM · NACMAD' : 'EDADM · PAISNXM'} ÷ women aged 15–49 by single year of age and ${nat ? 'nationality' : 'country of birth'} on ${popDate} (INE Estadística Continua de Población, table 56939). Computed here, so it can differ slightly from INE's published indicator.`;
+  const rowH = 30, gapSub = 26;
+  const H = d.length * rowH + gapSub + 34;
+  const { svg, g, w } = frame(el, H, { t: 8, r: 120, b: 26, l: 150 });
+  svg.attr('aria-label', `Children per woman in ${state.year} by mother's ${nat ? 'nationality' : 'country of birth'}`);
+  const yOf = (i) => i * rowH + (d[i].sub ? gapSub : 0);
+  const x = d3.scaleLinear([0, Math.max(2.4, d3.max(d, (p) => p.tfr) * 1.05)], [0, w]).nice();
+  const bh = 18;
+  g.append('g').attr('class', 'gridlines').attr('transform', `translate(0,${yOf(d.length - 1) + rowH})`)
+    .call(d3.axisBottom(x).ticks(6).tickSize(-(yOf(d.length - 1) + rowH)).tickFormat(''));
+  g.append('g').attr('class', 'axis').attr('transform', `translate(0,${yOf(d.length - 1) + rowH})`)
+    .call(d3.axisBottom(x).ticks(6).tickSize(0).tickPadding(8)).select('.domain').remove();
+  const firstSub = d.findIndex((p) => p.sub);
+  if (firstSub > 0) g.append('text').attr('class', 'lbl').attr('x', -150).attr('y', yOf(firstSub) - 8).style('fill', 'var(--muted)').text(nat ? 'Foreign nationality, by continent' : 'Born abroad, by continent');
+  d.forEach((p, i) => {
+    const y0 = yOf(i) + (rowH - bh) / 2;
+    g.append('text').attr('class', p.k === 'all' ? 'lbl-strong' : 'lbl').attr('x', p.sub ? -138 : -150).attr('y', y0 + bh / 2).attr('dy', '0.35em').text(p.name);
+    g.append('path').attr('fill', p.k === 'all' ? css('--ord3') : css('--s1')).attr('d', barPath(0, y0, x(p.tfr), bh))
+      .on('mousemove', (ev) => showTip(ev, `<div class="t">${p.name} · ${state.year}</div>${row('Children per woman', p.tfr.toFixed(2))}${row('Births', fmt(p.births))}${row('Women aged 15–49', fmt(p.women))}${row('Mean age at childbirth', p.meanAge.toFixed(1))}`))
+      .on('mouseleave', hideTip);
+    g.append('text').attr('class', 'lbl-strong').attr('x', x(p.tfr) + 8).attr('y', y0 + bh / 2).attr('dy', '0.35em').text(p.tfr.toFixed(2));
+  });
+  const xr = x(2.1), bottom = yOf(d.length - 1) + rowH;
+  g.append('line').attr('class', 'ref-line').attr('x1', xr).attr('x2', xr).attr('y1', -4).attr('y2', bottom);
+  g.append('text').attr('class', 'lbl halo').attr('x', xr + 6).attr('y', 6).text('2.1 = replacement level');
+}
+
+let GEO = null; // simplified GADM provinces, feature id = INE province code
+fetch('provinces.geo.json').then((r) => { if (!r.ok) throw new Error(r.status); return r.json(); })
+  .then((g) => { GEO = g; renderAll(); })
+  .catch(() => { GEO = false; renderAll(); });
+const CANARIAS = ['35', '38'];
+function drawProvinces() {
+  const el = $('#c-prov');
+  const M = METRICS[state.metric];
+  const codes = Object.keys(DATA.meta.provinces);
+  const vals = new Map(codes.map((c) => [c, { v: M.f(state.origin, c), n: sl(state.origin, c).n }]));
+  const ref = state.metric === 'ab' ? sl('ab', 'ES').n / sl('all', 'ES').n : M.f(state.origin, 'ES');
+  $('#prov-sub').textContent = `${M.label}${state.metric === 'mix' ? ` by ${MIX[state.mixDef].noun} (${UNION[state.union]})` : ''}${state.metric === 'both' ? ` (share of births where both parents' ${byNat() ? 'nationality' : 'country of birth'} is recorded)` : ''}, ${originTxt(state.origin)}, by province of residence. Click a province to filter by it.`;
+  drawProvTable();
+  if (GEO === null) return emptyState(el, 'Loading map…');
+  if (GEO === false) return emptyState(el, 'Could not load the province map. The table below has the same figures.');
+
+  const W = el.clientWidth;
+  const H = Math.round(Math.max(300, Math.min(540, W * 0.62)));
+  const { svg, g } = frame(el, H, { t: 0, r: 0, b: 0, l: 0 });
+  svg.attr('aria-label', `Map of provinces coloured by ${M.label}`);
+  const ok = (v) => Number.isFinite(v) && (state.metric !== 'n' || v > 0); // log scale needs > 0
+  const finite = [...vals.values()].map((d) => d.v).filter(ok);
+  const [lo, hi] = d3.extent(finite);
+  const ramp = ['--seq0', '--seq1', '--seq2', '--seq3', '--seq4', '--seq5'].map(css);
+  const interp = d3.interpolateRgbBasis(ramp);
+  // births are very skewed (Madrid vs Soria), so births use a log scale; rates use a linear one
+  const color = state.metric === 'n' ? d3.scaleSequentialLog([Math.max(1, lo), hi], interp) : d3.scaleSequential([lo, hi], interp);
+  const fill = (c) => { const d = vals.get(c); return d && ok(d.v) ? color(d.v) : css('--grid'); };
+
+  // Mainland + Balearics + Ceuta/Melilla in the main frame; Canary Islands in an inset at bottom left
+  const main = { type: 'FeatureCollection', features: GEO.features.filter((f) => !CANARIAS.includes(f.id)) };
+  const can = { type: 'FeatureCollection', features: GEO.features.filter((f) => CANARIAS.includes(f.id)) };
+  const legendH = 46, pad = 8, wide = W >= 700;
+  const iw = Math.min(W * (wide ? 0.24 : 0.5), 260), ih = iw * 0.42, ix = pad, iy = H - legendH - ih - 4;
+  // wide: inset sits left of the mainland; narrow: inset sits below it
+  const projMain = d3.geoConicConformal().parallels([37, 43]).rotate([3.7, 0])
+    .fitExtent(wide ? [[ix + iw + 12, pad], [W - pad, H - legendH]] : [[pad, pad], [W - pad, iy - 8]], main);
+  const projCan = d3.geoConicConformal().parallels([27, 29]).rotate([15.5, 0]).fitExtent([[ix + 6, iy + 6], [ix + iw - 6, iy + ih - 6]], can);
+  const pathMain = d3.geoPath(projMain), pathCan = d3.geoPath(projCan);
+  const pathOf = (f) => (CANARIAS.includes(f.id) ? pathCan : pathMain)(f);
+  g.append('rect').attr('x', ix).attr('y', iy).attr('width', iw).attr('height', ih).attr('rx', 6)
+    .attr('fill', 'none').attr('stroke', css('--axis')).attr('stroke-dasharray', '3 3');
+  g.append('text').attr('class', 'lbl').attr('x', ix + 8).attr('y', iy + 14).text('Canarias');
+
+  const tipHtml = (c) => {
+    const d = vals.get(c);
+    const share = state.metric === 'n' ? row('Share of Spain', pct(d.v / ref)) : row('Spain', M.show(ref));
+    return `<div class="t">${provName(c)}</div>${row(M.label, Number.isFinite(d.v) ? M.show(d.v) : '–')}${state.metric === 'n' ? '' : row('Births', fmt(d.n))}${share}<div style="color:var(--muted);margin-top:4px">${c === state.prov ? 'Click to clear' : 'Click to filter'}</div>`;
+  };
+  const pick = (c) => { hideTip(); state.prov = state.prov === c ? 'ES' : c; update(); };
+  const hl = () => g.append('path').attr('fill', 'none').attr('pointer-events', 'none').attr('stroke-linejoin', 'round');
+  const areas = g.append('g');
+  const hover = hl().attr('stroke', css('--fg')).attr('stroke-width', 1.5);
+  const sel = hl().attr('stroke', css('--fg')).attr('stroke-width', 2.5);
+  const feats = GEO.features.filter((f) => vals.has(f.id));
+  areas.selectAll(null).data(feats).join('path')
+    .attr('d', pathOf).attr('fill', (f) => fill(f.id)).attr('stroke', css('--surface')).attr('stroke-width', 0.75)
+    .attr('tabindex', 0).attr('role', 'button').attr('aria-label', (f) => `${provName(f.id)}: ${M.show(vals.get(f.id).v)}`)
+    .style('cursor', 'pointer').style('outline', 'none')
+    .on('mousemove', (ev, f) => { hover.attr('d', pathOf(f)); showTip(ev, tipHtml(f.id)); })
+    .on('mouseleave', () => { hover.attr('d', null); hideTip(); })
+    .on('focus', (ev, f) => hover.attr('d', pathOf(f)))
+    .on('blur', () => hover.attr('d', null))
+    .on('click', (ev, f) => pick(f.id))
+    .on('keydown', (ev, f) => { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); pick(f.id); } });
+  // Ceuta and Melilla are a few pixels wide: add a dot so they can be seen and clicked
+  areas.selectAll(null).data(feats.filter((f) => f.id === '51' || f.id === '52')).join('circle')
+    .attr('cx', (f) => pathMain.centroid(f)[0]).attr('cy', (f) => pathMain.centroid(f)[1]).attr('r', 5)
+    .attr('fill', (f) => fill(f.id)).attr('stroke', css('--fg-2')).attr('stroke-width', 0.75).style('cursor', 'pointer')
+    .on('mousemove', (ev, f) => showTip(ev, tipHtml(f.id))).on('mouseleave', hideTip).on('click', (ev, f) => pick(f.id));
+  const selF = feats.find((f) => f.id === state.prov);
+  if (selF) sel.attr('d', pathOf(selF));
+
+  // legend: colour ramp from lowest to highest province, with Spain marked for rates
+  const lw = Math.min(240, W * 0.45), lx = W - lw - pad, ly = H - legendH + 16;
+  const gid = 'provgrad';
+  const defs = svg.append('defs').append('linearGradient').attr('id', gid);
+  const lscale = (state.metric === 'n' ? d3.scaleLog : d3.scaleLinear)(color.domain(), [0, lw]);
+  d3.range(11).forEach((i) => defs.append('stop').attr('offset', `${i * 10}%`).attr('stop-color', color(lscale.invert((lw * i) / 10))));
+  const lg = g.append('g').attr('transform', `translate(${lx},${ly})`);
+  lg.append('rect').attr('width', lw).attr('height', 10).attr('rx', 3).attr('fill', `url(#${gid})`);
+  lg.append('text').attr('class', 'lbl').attr('y', 24).text(M.show(color.domain()[0]));
+  lg.append('text').attr('class', 'lbl').attr('x', lw).attr('y', 24).attr('text-anchor', 'end').text(M.show(color.domain()[1]));
+  if (state.metric !== 'n' && Number.isFinite(ref)) {
+    const rx = Math.max(0, Math.min(lw, lscale(ref)));
+    lg.append('line').attr('x1', rx).attr('x2', rx).attr('y1', -2).attr('y2', 12).attr('stroke', css('--fg')).attr('stroke-width', 1.5);
+    lg.append('text').attr('class', 'lbl-strong').attr('x', rx).attr('y', -6).attr('text-anchor', rx < 40 ? 'start' : rx > lw - 40 ? 'end' : 'middle').text(`Spain ${M.show(ref)}`);
+  }
+}
+
+// ---------- 8. Countries ----------
+function drawCountries(s) {
+  const el = $('#c-countries');
+  const entries = Object.entries(s.countries).sort((a, b) => b[1] - a[1]); // numeric-like keys lose insertion order
+  if (state.origin === 'es') return emptyState(el, byNat() ? 'All mothers in this selection are Spanish.<br>Choose "All" or "Foreign" to see nationalities.' : 'All mothers in this selection were born in Spain.<br>Choose "All" or "Abroad" to see countries of birth.');
+  if (!entries.length) return emptyState(el, `No ${byNat() ? 'foreign mothers' : 'mothers born abroad'} in this selection.`);
+  const totAb = d3.sum(entries, (e) => e[1]) + s.countriesOther;
+  const d = entries.map(([k, v]) => ({ k, v, name: DATA.meta.countries[k] || k }));
+  const rowH = 22;
+  const { svg, g, w, h } = frame(el, d.length * rowH + 10, { t: 4, r: 96, b: 6, l: 150 });
+  svg.attr('aria-label', byNat() ? 'Top nationalities of foreign mothers' : 'Top countries of birth of mothers born abroad');
+  const y = d3.scaleBand(d.map((p) => p.k), [0, h]).padding(0.25);
+  const x = d3.scaleLinear([0, d3.max(d, (p) => p.v)], [0, w]);
+  g.selectAll(null).data(d).join('text').attr('class', 'lbl').attr('x', -8).attr('y', (p) => y(p.k) + y.bandwidth() / 2).attr('dy', '0.35em').attr('text-anchor', 'end').text((p) => p.name);
+  g.selectAll(null).data(d).join('path').attr('fill', css('--s1')).attr('d', (p) => barPath(0, y(p.k), x(p.v), y.bandwidth()))
+    .on('mousemove', (ev, p) => showTip(ev, `<div class="t">${p.name}</div>${row('Births', fmt(p.v))}${row(byNat() ? 'Share of foreign mothers' : 'Share of mothers born abroad', pct(p.v / totAb))}`))
+    .on('mouseleave', hideTip);
+  g.selectAll(null).data(d).join('text').attr('class', 'lbl').attr('x', (p) => x(p.v) + 6).attr('y', (p) => y(p.k) + y.bandwidth() / 2).attr('dy', '0.35em')
+    .text((p) => `${fmt(p.v)} · ${pct(p.v / totAb, 0)}`);
+  g.append('line').attr('x1', 0).attr('x2', 0).attr('y1', 0).attr('y2', h).attr('stroke', css('--axis'));
+}
+
+// ---------- 9. Marital status ----------
+function drawMarital(s) {
+  const el = $('#c-marital');
+  if (!s.n) return emptyState(el, 'No births in this selection.');
+  const d = s.marital.map((v, i) => ({ name: (DATA.meta.marital || MARITAL)[i], v, p: v / s.n }));
+  const rowH = 34;
+  const { svg, g, w, h } = frame(el, d.length * rowH + 64, { t: 4, r: 64, b: 60, l: 150 });
+  svg.attr('aria-label', 'Mother marital status');
+  const y = d3.scaleBand(d.map((p) => p.name), [0, d.length * rowH]).padding(0.3);
+  const x = d3.scaleLinear([0, 1], [0, w]);
+  g.selectAll(null).data(d).join('text').attr('class', 'lbl').attr('x', -8).attr('y', (p) => y(p.name) + y.bandwidth() / 2).attr('dy', '0.35em').attr('text-anchor', 'end').text((p) => p.name);
+  g.selectAll(null).data(d).join('rect').attr('y', (p) => y(p.name)).attr('height', y.bandwidth()).attr('width', w).attr('rx', 4).attr('fill', css('--grid'));
+  g.selectAll(null).data(d).join('path').attr('fill', css('--s1')).attr('d', (p) => barPath(0, y(p.name), x(p.p), y.bandwidth()))
+    .on('mousemove', (ev, p) => showTip(ev, `<div class="t">${p.name}</div>${row('Births', fmt(p.v))}${row('Share', pct(p.p))}`))
+    .on('mouseleave', hideTip);
+  g.selectAll(null).data(d).join('text').attr('class', 'lbl-strong').attr('x', w + 8).attr('y', (p) => y(p.name) + y.bandwidth() / 2).attr('dy', '0.35em').text((p) => pct(p.p));
+  const base = d.length * rowH + 22;
+  g.append('text').attr('class', 'lbl').attr('x', -150).attr('y', base).text('Twins and other multiple births');
+  g.append('text').attr('class', 'lbl-strong').attr('x', w + 8).attr('y', base).text(pct(s.mult / s.n));
+  g.append('text').attr('class', 'lbl').attr('x', -150).attr('y', base + 20).text(`${fmt(s.mult)} babies born in deliveries of two or more`);
+}
+
+// ---------- 10. Parents from different countries ----------
+function hbarRows(g, rows, y, w, color) {
+  g.selectAll(null).data(rows).join('text').attr('class', 'lbl').attr('x', 0).attr('y', (r) => y(r.k) - 6).text((r) => r.name);
+  g.selectAll(null).data(rows).join('rect').attr('y', (r) => y(r.k)).attr('height', y.bandwidth()).attr('width', w).attr('rx', 4).attr('fill', css('--grid'));
+  g.selectAll(null).data(rows).join('path').attr('fill', color).attr('d', (r) => barPath(0, y(r.k), Math.max(0, r.p) * w, y.bandwidth()))
+    .on('mousemove', (ev, r) => showTip(ev, `<div class="t">${r.name}</div>${row('Births', fmt(r.v))}${row('Out of', fmt(r.of))}${row('Share', pct(r.p))}`))
+    .on('mouseleave', hideTip);
+  g.selectAll(null).data(rows).join('text').attr('class', 'lbl-strong').attr('x', w + 8).attr('y', (r) => y(r.k) + y.bandwidth() / 2).attr('dy', '0.35em').text((r) => pct(r.p));
+}
+function drawMixed(s) {
+  const el = $('#c-mixed'), D = MIX[state.mixDef], G = s.mixed[state.mixDef], m = G[state.union];
+  $('#mix-title').textContent = D.title;
+  $('#mix-sub').textContent = D.sub;
+  $('#mix-vars').textContent = DATA.meta.layout === '1996'
+    ? `${D.vars} — the file records the baby's father; CAS is whether the mother is married. The ${state.year} file has nationality only, not country of birth.`
+    : `${D.vars} — the file records the baby's father; ECIVM is the mother's marital status. "Unmarried" includes registered partnerships (PHECHO), recorded for only a third of these births.`;
+  if (!G.all.k) return emptyState(el, 'No births with both parents recorded in this selection.');
+  const top = [['all', 'All couples'], ['mar', 'Married mothers'], ['unm', 'Unmarried mothers']]
+    .map(([k, name]) => ({ k, name, v: G[k].d, of: G[k].k, p: G[k].k ? G[k].d / G[k].k : 0 }));
+  const comp = D.dir.map((name, i) => ({ k: 'd' + i, name, v: m.dir[i], of: m.d, p: m.d ? m.dir[i] / m.d : 0 }));
+  const rowH = 40, gap = 46;
+  const H = top.length * rowH + gap + comp.length * rowH + 16;
+  const { svg, g, w } = frame(el, H, { t: 18, r: 56, b: 0, l: 0 });
+  svg.attr('aria-label', `Share of births: ${D.title.toLowerCase()}`);
+  const y1 = d3.scaleBand(top.map((r) => r.k), [0, top.length * rowH]).paddingInner(0.55).paddingOuter(0.1);
+  hbarRows(g, top, y1, w, css('--s1'));
+  const g2 = g.append('g').attr('transform', `translate(0,${top.length * rowH + gap})`);
+  g2.append('text').attr('class', 'lbl-strong').attr('y', -22).text(`Who is who: ${UNION_ADJ[state.union].toLowerCase()} (${fmt(m.d)})`);
+  const y2 = d3.scaleBand(comp.map((r) => r.k), [0, comp.length * rowH]).paddingInner(0.55).paddingOuter(0.1);
+  hbarRows(g2, comp, y2, w, css('--s1')); // violet is reserved for fathers in the next card
+}
+// who = 'esM' (mother from Spain → father's country, violet) | 'esP' (father from Spain → mother's country, teal)
+function drawParentCountries(s, who) {
+  const el = $(`#c-${who}`), m = s.mixed[state.mixDef][state.union];
+  const isMom = who === 'esP', color = css(isMom ? '--s1' : '--s2');
+  const tot = isMom ? m.dir[1] : m.dir[0];
+  const nat = state.mixDef === 'nat';
+  const ab = isMom ? 'mother' : 'father';
+  $(`#${who}-title`).textContent = MIX[state.mixDef].dir[isMom ? 1 : 0];
+  $(`#${who}-sub`).textContent = `${ab[0].toUpperCase() + ab.slice(1)}'s ${MIX[state.mixDef].noun} · ${fmt(tot)} births`;
+  $(`#${who}-vars`).textContent = `Top 10 · ${UNION[state.union]} · ${nat ? 'PAISNACM · PAISNACP' : 'PAISNXM · PAISNXP'}`;
+  if (!m[who].length) return emptyState(el, 'No births of this kind in this selection.');
+  const d = m[who].map(([k, v]) => ({ k, v, name: DATA.meta.countries[k] || k }));
+  const isMomBars = isMom;
+  const rowH = 24;
+  const { svg, g, w, h } = frame(el, d.length * rowH + 8, { t: 4, r: 84, b: 4, l: 132 });
+  svg.attr('aria-label', `${isMomBars ? "Mother's" : "Father's"} ${MIX[state.mixDef].noun}: ${MIX[state.mixDef].dir[isMom ? 1 : 0].toLowerCase()}`);
+  const y = d3.scaleBand(d.map((p) => p.k), [0, h]).padding(0.25);
+  const x = d3.scaleLinear([0, d3.max(d, (p) => p.v)], [0, w]);
+  g.selectAll(null).data(d).join('text').attr('class', 'lbl').attr('x', -8).attr('y', (p) => y(p.k) + y.bandwidth() / 2).attr('dy', '0.35em').attr('text-anchor', 'end').text((p) => p.name);
+  g.selectAll(null).data(d).join('path').attr('fill', color).attr('d', (p) => barPath(0, y(p.k), x(p.v), y.bandwidth()))
+    .on('mousemove', (ev, p) => showTip(ev, `<div class="t">${isMomBars ? 'Mother' : 'Father'}: ${p.name}</div>${row(isMomBars ? 'Father' : 'Mother', MIX[state.mixDef].esLbl)}${row('Births', fmt(p.v))}${row('Share of this group', pct(p.v / tot))}`))
+    .on('mouseleave', hideTip);
+  g.selectAll(null).data(d).join('text').attr('class', 'lbl').attr('x', (p) => x(p.v) + 6).attr('y', (p) => y(p.k) + y.bandwidth() / 2).attr('dy', '0.35em')
+    .text((p) => `${fmt(p.v)} · ${pct(p.v / tot, 0)}`);
+  g.append('line').attr('x1', 0).attr('x2', 0).attr('y1', 0).attr('y2', h).attr('stroke', css('--axis'));
+}
+
+// ---------- state & wiring ----------
+function syncControls() {
+  document.querySelectorAll('#year button').forEach((b) => b.setAttribute('aria-selected', String(b.dataset.v === state.year)));
+  document.querySelectorAll('#origin button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.v === state.origin)));
+  if (state.origin !== 'all' && (state.metric === 'ab' || state.metric === 'both')) state.metric = 'n';
+  if (!hasCes() && state.metric === 'ces') state.metric = 'n';
+  document.querySelectorAll('#metric button').forEach((b) => {
+    b.setAttribute('aria-pressed', String(b.dataset.v === state.metric));
+    const noCes = b.dataset.v === 'ces' && !hasCes();
+    b.disabled = ((b.dataset.v === 'ab' || b.dataset.v === 'both') && state.origin !== 'all') || noCes;
+    b.title = noCes ? `Caesarean sections were not recorded in ${state.year}` : b.disabled ? `Available when "${$('#lbl-origin').textContent}" is All` : '';
+  });
+  // 2006 has nationality only: show nationality there, and go back to country of birth on the other years
+  if (byNat() && state.mixDef === 'birth') { state.mixDef = 'nat'; state.mixWasBirth = true; }
+  else if (!byNat() && DATA && state.mixWasBirth) { state.mixDef = 'birth'; delete state.mixWasBirth; }
+  document.querySelectorAll('#mixdef button').forEach((b) => {
+    b.setAttribute('aria-pressed', String(b.dataset.v === state.mixDef));
+    b.disabled = b.dataset.v === 'birth' && byNat();
+    b.title = b.disabled ? `Country of birth was not recorded in ${state.year}` : '';
+  });
+  document.querySelectorAll('#union button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.v === state.union)));
+  document.querySelectorAll('#agecont button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.v === state.ageCont)));
+  $('#prov').value = state.prov;
+  $('#reset').hidden = state.origin === 'all' && state.prov === 'ES';
+}
+function renderAll() {
+  if (!DATA) return;
+  const s = sl(state.origin, state.prov);
+  yearLabels();
+  $('#status').textContent = `${state.year} · ${fmt(s.n)} births · ${provName(state.prov)} · ${originTxt(state.origin)}`;
+  renderKpis(s);
+  drawTfr(); drawAge(s); drawOrder(s); drawRates(s); drawMonth(s); drawHeat(s); drawInterval(s); drawProvinces(); drawCountries(s); drawMarital(s); drawMixed(s); drawParentCountries(s, 'esM'); drawParentCountries(s, 'esP');
+  mapVars();
+}
+function update() { syncControls(); saveState(); renderAll(); }
+
+document.querySelectorAll('#origin button').forEach((b) => b.addEventListener('click', () => { state.origin = b.dataset.v; update(); }));
+document.querySelectorAll('#metric button').forEach((b) => b.addEventListener('click', () => { if (!b.disabled) { state.metric = b.dataset.v; update(); } }));
+document.querySelectorAll('#mixdef button').forEach((b) => b.addEventListener('click', () => { state.mixDef = b.dataset.v; delete state.mixWasBirth; update(); }));
+document.querySelectorAll('#union button').forEach((b) => b.addEventListener('click', () => { state.union = b.dataset.v; update(); }));
+document.querySelectorAll('#agecont button').forEach((b) => b.addEventListener('click', () => { state.ageCont = b.dataset.v; update(); }));
+$('#prov').addEventListener('change', (e) => { state.prov = e.target.value; update(); });
+$('#reset').addEventListener('click', () => { state.origin = 'all'; state.prov = 'ES'; update(); });
+
+let rz;
+new ResizeObserver(() => { clearTimeout(rz); rz = setTimeout(renderAll, 120); }).observe(document.querySelector('main'));
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change', renderAll);
+new MutationObserver(renderAll).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+
+const loadYear = (y) => CACHE[y] ? Promise.resolve(CACHE[y])
+  : fetch(YEARS[y].file).then((r) => { if (!r.ok) throw new Error(r.status); return r.json(); }).then((d) => (CACHE[y] = d));
+let provsFilled = false;
+function selectYear(y) {
+  state.year = y;
+  syncControls(); saveState();
+  if (!CACHE[y]) { $('#status').textContent = `Loading ${y} microdata…`; $('main').classList.add('loading'); }
+  loadYear(y).then((data) => {
+    if (state.year !== y) return; // a later click won
+    DATA = data;
+    $('main').classList.remove('loading');
+    if (!provsFilled) {
+      const opts = Object.keys(DATA.meta.provinces).map((c) => [c, provName(c)]).sort((a, b) => a[1].localeCompare(b[1], 'es'));
+      $('#prov').insertAdjacentHTML('beforeend', opts.map(([c, n]) => `<option value="${c}">${n}</option>`).join(''));
+      provsFilled = true;
+    }
+    if (!DATA.slices[`${state.origin}|${state.prov}`]) Object.assign(state, { origin: 'all', prov: 'ES' });
+    document.querySelectorAll('.yr').forEach((el) => { el.textContent = y; });
+    document.title = `Nacimientos ${y}`;
+    $('#src-file').textContent = YEARS[y].src;
+    $('#src-note').textContent = YEARS[y].note;
+    const m = DATA.meta.missing;
+    $('#foot-missing').textContent = `Not recorded in ${y}: weeks of pregnancy for ${fmt(m.weeks)} births (${pct(m.weeks / DATA.meta.n)}), birth weight for ${fmt(m.weight)} (${pct(m.weight / DATA.meta.n)}), father's age for ${fmt(m.fatherAge)} (${pct(m.fatherAge / DATA.meta.n)}). Rates use the births where the value is recorded; preterm uses INE's term/preterm flag, recorded for every birth.`;
+    update();
+  }).catch((err) => {
+    $('main').classList.remove('loading');
+    $('#status').textContent = `Could not load ${y} data (${err.message}). Reload the page to try again.`;
+  });
+}
+document.querySelectorAll('#year button').forEach((b) => b.addEventListener('click', () => { if (b.dataset.v !== state.year) selectYear(b.dataset.v); }));
+selectYear(state.year);
+Object.keys(YEARS).filter((y) => y !== state.year).forEach((y) => loadYear(y).catch(() => {})); // prefetch so switching is instant
+</script>
+
+</body></html>
