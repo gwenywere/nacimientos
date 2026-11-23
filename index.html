@@ -285,6 +285,16 @@ footer a { color: var(--accent); text-underline-offset: 2px; }
       <div class="vars">NORMA · EDADM · PAISNXM</div>
     </article>
 
+    <article class="card span-12">
+      <div class="head">
+        <div><h2>Born alive, died within 24 hours, stillborn</h2><p class="sub" id="partos-sub">Babies by outcome, from the deliveries file. All of Spain.</p></div>
+        <div class="legend"><span><i style="background:var(--s3)"></i>Stillborn, per 1,000 babies</span><span><i style="background:var(--s2)"></i>Died within 24 hours, per 1,000 born alive</span><span><i style="width:14px;height:2px;border-radius:0;background:var(--fg-2);vertical-align:3px"></i>95% range</span></div>
+      </div>
+      <div class="legend" id="partos-counts" style="font-size:13px;gap:4px 22px"></div>
+      <div class="chart" id="c-partos"></div>
+      <div class="vars" id="partos-vars">MNP partos · CLASIF1–6 · EDADM · PAISNXM</div>
+    </article>
+
     <article class="card span-7">
       <div class="head">
         <div><h2>Gestation and birth weight</h2><p class="sub">Births by weeks of pregnancy and weight band (250 g). Color on a log scale. Dashed lines mark the preterm and low-weight thresholds.</p></div>
@@ -842,6 +852,78 @@ function drawCmp(s) {
   });
 }
 
+// ---------- 6c'. Born alive / died within 24 h / stillborn (deliveries file, national only) ----------
+let PARTOS = null;
+fetch('partos.json').then((r) => { if (!r.ok) throw new Error(r.status); return r.json(); })
+  .then((t) => { PARTOS = t; renderAll(); })
+  .catch(() => { PARTOS = false; renderAll(); });
+// Wilson 95% interval for k events out of n, per 1,000
+const wilson = (k, n) => {
+  if (!n) return [NaN, NaN];
+  const z = 1.96, p = k / n, d = 1 + z * z / n, c = p + z * z / (2 * n), e = z * Math.sqrt(p * (1 - p) / n + z * z / (4 * n * n));
+  return [1000 * Math.max(0, (c - e) / d), 1000 * (c + e) / d];
+};
+function drawPartos() {
+  const el = $('#c-partos'), counts = $('#partos-counts');
+  if (PARTOS === null) { counts.innerHTML = ''; return emptyState(el, 'Loading…'); }
+  const P = PARTOS && PARTOS[state.year];
+  if (!P) {
+    counts.innerHTML = '';
+    $('#partos-sub').textContent = 'Babies by outcome, from the deliveries file. All of Spain.';
+    $('#partos-vars').textContent = 'MNP partos · CLASIF1–6';
+    return emptyState(el, `The deliveries file for ${state.year} hasn't been added yet.`);
+  }
+  const o = state.origin, oTxt = { all: 'all mothers', es: 'mothers born in Spain', ab: 'mothers born abroad' }[o];
+  const G = P.groups.all, born = G[0] + G[1];
+  $('#partos-sub').textContent = `Babies by outcome in ${state.year}, from the deliveries file (one record per delivery, every baby counted). All of Spain: the province filter doesn't apply. Mother's age uses the origin filter above (${oTxt}).`;
+  counts.innerHTML = `<span><b>${fmt(born)}</b> born alive</span><span><b>${fmt(G[1])}</b> of them died within 24 hours</span><span><b>${fmt(G[2])}</b> stillborn</span><span style="color:var(--muted)">${fmt(P.deliveries)} deliveries</span>`;
+  const mk = (name, [alive, died, still], extra = {}) => {
+    const live = alive + died, all = live + still;
+    return { name, alive, died, still, live, all, sb: 1000 * still / all, nd: live ? 1000 * died / live : NaN, sbCI: wilson(still, all), ndCI: wilson(died, live), ...extra };
+  };
+  const sections = [
+    [null, [mk('All babies', G, { strong: true })]],
+    ["By mother's country of birth", [mk('Spain', P.groups.es), mk('Abroad', P.groups.ab),
+      ...['eu', 'af', 'am', 'as'].map((k) => mk(contName(k), P.groups[k], { sub: true }))]],
+    [`By mother's age · ${oTxt}`, P.ageGroups.map((g, i) => mk(g, P.age[o][i]))],
+  ];
+  const rowH = 30, headH = 26, bh = 9;
+  let yy = 0;
+  const items = [];
+  sections.forEach(([title, rows]) => {
+    if (title) { items.push({ title, y: yy + 17 }); yy += headH; }
+    rows.forEach((r) => { items.push({ ...r, y: yy }); yy += rowH; });
+  });
+  const data = items.filter((it) => !it.title && it.all);
+  const narrow = el.clientWidth < 520, L = narrow ? 104 : 150;
+  const { svg, g, w } = frame(el, yy + 34, { t: 4, r: narrow ? 34 : 48, b: 30, l: L });
+  svg.attr('aria-label', 'Stillbirths per 1,000 babies and deaths within 24 hours per 1,000 born alive, by mother origin and age');
+  const x = d3.scaleLinear([0, d3.max(data, (d) => Math.max(d.sbCI[1], d.ndCI[1] || 0))], [0, w]).nice();
+  g.append('g').attr('class', 'gridlines').attr('transform', `translate(0,${yy})`).call(d3.axisBottom(x).ticks(narrow ? 4 : 8).tickSize(-yy).tickFormat(''));
+  g.append('g').attr('class', 'axis').attr('transform', `translate(0,${yy})`).call(d3.axisBottom(x).ticks(narrow ? 4 : 8).tickSize(0).tickPadding(8)).select('.domain').remove();
+  const sCol = css('--s3'), dCol = css('--s2'), wCol = css('--fg-2');
+  items.forEach((it) => {
+    if (it.title) { g.append('text').attr('class', 'lbl').attr('x', -L).attr('y', it.y).style('fill', 'var(--muted)').text(it.title); return; }
+    const cy = it.y + rowH / 2;
+    g.append('text').attr('class', it.strong ? 'lbl-strong' : 'lbl').attr('x', it.sub ? -L + 12 : -L).attr('y', cy).attr('dy', '0.35em').text(it.name);
+    if (!it.all) { g.append('text').attr('class', 'lbl').attr('x', 4).attr('y', cy).attr('dy', '0.35em').style('fill', 'var(--muted)').text('no births'); return; }
+    [[it.sb, it.sbCI, sCol, cy - bh - 0.5], [it.nd, it.ndCI, dCol, cy + 0.5]].forEach(([v, ci, col, y0]) => {
+      if (!Number.isFinite(v)) return;
+      g.append('path').attr('fill', col).attr('opacity', it.strong ? 1 : 0.85).attr('d', barPath(0, y0, Math.max(x(v), 1.5), bh, 2));
+      g.append('line').attr('x1', x(ci[0])).attr('x2', x(ci[1])).attr('y1', y0 + bh / 2).attr('y2', y0 + bh / 2).attr('stroke', wCol).attr('stroke-width', 1.2);
+      g.append('text').attr('class', 'lbl').attr('x', Math.max(x(v), x(ci[1])) + 5).attr('y', y0 + bh / 2).attr('dy', '0.35em').style('font-size', '10.5px').text(v.toFixed(1));
+    });
+    g.append('rect').attr('x', -L).attr('y', it.y).attr('width', w + L + 40).attr('height', rowH).attr('fill', 'transparent')
+      .on('mousemove', (ev) => showTip(ev, `<div class="t">${it.name}</div>` +
+        row('Stillborn', `${fmt(it.still)} · ${it.sb.toFixed(2)} ‰`, sCol) +
+        row('Died within 24 h', `${fmt(it.died)} · ${Number.isFinite(it.nd) ? it.nd.toFixed(2) : '–'} ‰`, dCol) +
+        row('Born alive', fmt(it.live)) + row('All babies', fmt(it.all)) +
+        row('95% range, stillborn', `${it.sbCI[0].toFixed(2)}–${it.sbCI[1].toFixed(2)} ‰`)))
+      .on('mouseleave', hideTip);
+  });
+  $('#partos-vars').textContent = `MNP partos ${state.year} · CLASIF1–6 (stillborn = late fetal death as registered) · EDADM · PAISNXM. Origin is unknown for ${fmt(P.unknownOrigin)} babies, counted in the totals only.`;
+}
+
 // ---------- 6d. Boys per 100 girls ----------
 function drawSex(s) {
   const el = $('#c-sex');
@@ -1245,7 +1327,7 @@ function renderAll() {
   yearLabels();
   $('#status').textContent = `${state.year} · ${fmt(s.n)} births · ${provName(state.prov)} · ${originTxt(state.origin)}`;
   renderKpis(s);
-  drawTfr(); drawAge(s); drawOrder(s); drawRates(s); drawMonth(s); drawMult(s); drawCmp(s); drawHeat(s); drawInterval(s); drawSex(s); drawWed(s); drawProvinces(); drawCountries(s); drawMarital(s); drawNat(s); drawMixed(s); drawParentCountries(s, 'esM'); drawParentCountries(s, 'esP');
+  drawTfr(); drawAge(s); drawOrder(s); drawRates(s); drawMonth(s); drawMult(s); drawCmp(s); drawPartos(); drawHeat(s); drawInterval(s); drawSex(s); drawWed(s); drawProvinces(); drawCountries(s); drawMarital(s); drawNat(s); drawMixed(s); drawParentCountries(s, 'esM'); drawParentCountries(s, 'esP');
   mapVars();
 }
 function update() { syncControls(); saveState(); renderAll(); }

@@ -10,6 +10,7 @@ Interactive dashboard of every live birth registered in Spain in 1985, 1995, 200
 - Age of mother and father, also by continent of birth
 - Birth order, caesarean, preterm and low birth weight by mother's age
 - Twins and multiple births by mother's age; complications by mother's age and origin
+- Born alive, died within 24 hours and stillborn, by mother's origin and age (deliveries file, 2025)
 - Births per day by month; gestation × birth weight
 - Boys per 100 girls, by birth order and mother's origin
 - Time between the wedding and a married mother's first birth
@@ -21,6 +22,7 @@ Interactive dashboard of every live birth registered in Spain in 1985, 1995, 200
 
 - **Births:** [INE, Movimiento Natural de la Población — microdata of births](https://ine.es/dyngs/INEbase/es/operacion.htm?c=Estadistica_C&cid=1254736177007&menu=resultados&idp=1254735573002#_tabs-1254736195443). One record per live birth.
 - **Women by age and country of birth** (for children per woman): [INE, Estadística Continua de Población, table 56939](https://www.ine.es/jaxiT3/Tabla.htm?t=56939), via INE's public API. For 1985 and 1995, women by age only, from [table 56934](https://www.ine.es/jaxiT3/Tabla.htm?t=56934), since table 56939 starts in 2002.
+- **Stillbirths and deaths within 24 hours:** INE, Movimiento Natural de la Población — microdata of deliveries (*partos*), one record per delivery with every baby, including those born dead.
 - **Province boundaries:** simplified from [GADM](https://gadm.org) level 2.
 
 INE data are published under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). Figures computed here (especially children per woman) can differ slightly from INE's published indicators.
@@ -44,6 +46,7 @@ The 1985 and 1995 record layout comes from INE's design document for the 1980–
 | `index.html` | The page (plain HTML + [D3](https://d3js.org) from a CDN) |
 | `data.json`, `data-2015.json`, `data-2006.json`, `data-1995.json`, `data-1985.json` | Aggregated births by mother's origin × province (2025, 2015, 2006; 1995 and 1985 by province only) |
 | `tfr.json` | Children per woman by group |
+| `partos.json` | Babies born alive, died within 24 hours and stillborn, by mother's origin and age (from the deliveries file, by year) |
 | `provinces.geo.json` | Simplified province shapes, keyed by INE province code |
 | `scripts/` | Scripts that build the files above |
 
@@ -63,6 +66,9 @@ python scripts/build_nacimientos_json.py NACIA85 data-1985.json
 
 # children per woman (downloads women by age from INE's API)
 python scripts/build_tfr.py tfr.json 2025=data.json 2015=data-2015.json 2006=data-2006.json 1995=data-1995.json 1985=data-1985.json
+
+# born alive / died within 24 h / stillborn, from the deliveries file (keeps years already in partos.json)
+python scripts/build_partos_json.py md_MNPpartos_2025.txt partos.json
 
 # map shapes from a GADM level-2 GeoJSON of Spain
 python scripts/build_provinces_geo.py gadm41_ESP_2.json provinces.geo.json
