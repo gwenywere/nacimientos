@@ -1,8 +1,8 @@
 # Nacimientos en España · 1975, 1985, 1995, 2006, 2015, 2025
 
-Interactive dashboard of every live birth registered in Spain in 1975, 1985, 1995, 2006, 2015 and 2025, built from INE microdata. Filter by year, mother's origin and province of residence.
+Interactive dashboard of every live birth registered in Spain in 1975, 1985, 1995, 2006, 2015 and 2025, built from INE microdata. Filter by year, mother's origin and province of residence. A second page follows a set of indicators through every year from 1975 to 2025.
 
-**Live page:** https://gwenywere.github.io/nacimientos/
+**Live pages:** https://gwenywere.github.io/nacimientos/ (yearly dashboard) · https://gwenywere.github.io/nacimientos/trends.html (1975–2025)
 
 ## What it shows
 
@@ -17,6 +17,10 @@ Interactive dashboard of every live birth registered in Spain in 1975, 1985, 199
 - Mothers born abroad who hold Spanish nationality, by country of birth (2015, 2025)
 - Interactive province map (births, mother's age, caesarean, preterm, mother born abroad, both parents born abroad, mixed couples)
 - Mothers' countries of birth, marital status, and couples where the parents come from different countries
+
+The trends page (`trends.html`) has one point per year, 1975–2025: live births, children per woman, parents' mean age (and mother's age at the first child), stillbirths and deaths within 24 hours (from 1980), boys per 100 girls, births outside marriage, mothers from abroad (nationality from 1996, country of birth from 2007), birth order, mothers under 20 and aged 40+, multiple births, and preterm / low weight / caesarean. Hovering a year highlights it in every chart.
+
+Quirks in the yearly files show up there as they are: caesareans fall to about 18% in 2008–09 (likely incomplete recording), 2007 has four points more first children and a dip in fathers' age, and in 2007–08 the mother's country of birth is filled in only when it is not Spain (a blank counts as Spain). The 1975–79 deliveries files hold multiple deliveries only, so stillbirths start in 1980.
 
 ## Sources
 
@@ -45,14 +49,16 @@ The 1985 and 1995 record layout comes from INE's design document for the 1980–
 
 | File | Contents |
 |---|---|
-| `index.html` | The page (plain HTML + [D3](https://d3js.org) from a CDN) |
+| `index.html` | The yearly dashboard (plain HTML + [D3](https://d3js.org) from a CDN); `index.html?year=1985` opens a given year |
+| `trends.html` | The 1975–2025 trends page |
+| `trends.json` | One set of indicators per year, 1975–2025 |
 | `data.json`, `data-2015.json`, `data-2006.json`, `data-1995.json`, `data-1985.json`, `data-1975.json` | Aggregated births by mother's origin × province (2025, 2015, 2006; 1995, 1985 and 1975 by province only) |
 | `tfr.json` | Children per woman by group |
 | `partos.json` | Babies born alive, died within 24 hours and stillborn, by mother's origin and age (from the deliveries file, by year) |
 | `provinces.geo.json` | Simplified province shapes, keyed by INE province code |
 | `scripts/` | Scripts that build the files above |
 
-The raw microdata are not included (≈ 700 MB). Download them from the INE page above.
+The raw microdata are not included (≈ 25 GB unpacked for every year). Download them from the INE page above, or with `download_ine_mnp.py`, which reads the year links from that page.
 
 ## Rebuilding the data
 
@@ -76,6 +82,11 @@ python scripts/build_partos_json.py "Anonimizado Partos sin causa.A2015" partos.
 python scripts/build_partos_json.py "PARTOS 2006" partos.json
 python scripts/build_partos_json.py PARTOS.A1995.ANONIMI partos.json
 python scripts/build_partos_json.py PARTOS.A1985.ANONIMI partos.json
+
+# trends 1975-2025: reads every births and deliveries file in the folder the INE zips were unpacked into,
+# and women by age on 1 July of each year from INE's API (about 15 minutes with 3 processes)
+python scripts/build_trends.py ../data/nacimientos trends.json
+python scripts/build_trends.py ../data/nacimientos trends.json --years 2026   # add one year later on
 
 # map shapes from a GADM level-2 GeoJSON of Spain
 python scripts/build_provinces_geo.py gadm41_ESP_2.json provinces.geo.json

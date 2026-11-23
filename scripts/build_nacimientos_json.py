@@ -94,15 +94,23 @@ MARITAL_2016 = ['Married', 'Single', 'Separated or divorced', 'Widowed']
 MARITAL_1996 = ['Married', 'Not married']
 
 
-def read_rows(src, dr):
-    """Return (rows, layout_name). Detects the layout from the record length."""
+def iter_rows(src, dr):
+    """Return (layout_name, iterator of row dicts). Detects the layout from the record length
+    and streams the file, so a whole year never has to sit in memory."""
     with open(src, encoding='latin-1') as fh:
-        lines = [ln.rstrip('\r\n') for ln in fh if ln.strip()]
-    width = max(len(ln) for ln in lines[:1000])
+        head = [ln.rstrip('\r\n') for _, ln in zip(range(1000), fh) if ln.strip()]
+    width = max(len(ln) for ln in head)
+
+    def lines():
+        with open(src, encoding='latin-1') as fh:
+            for ln in fh:
+                if ln.strip():
+                    yield ln.rstrip('\r\n')
+
     if width <= 55:
-        rows = []
         flag = lambda v: {'1': '1', '6': '2'}.get(v, '')  # 1 = yes / normal, 6 = no / not normal -> 1 / 2
-        for ln in lines:
+
+        def conv(ln):
             r = {k: ln[p - 1:p - 1 + n].strip() for k, (p, n) in LAYOUT_1975.items()}
             r['ANOPAR'] = '19' + r['ANOPAR']
             r['ANIOMAT'] = '19' + r['ANIOMAT'] if r['ANIOMAT'] not in ('', '00') else ''
@@ -121,11 +129,10 @@ def read_rows(src, dr):
             r['CESAREA'] = None
             for k in ('PAISNXM', 'PAISNXP', 'PAISNACM', 'PAISNACP', 'NACIOEM', 'CUANNACM'):
                 r[k] = None
-            rows.append(r)
-        return rows, '1975'
+            return r
+        return '1975', map(conv, lines())
     if width <= 70:
-        rows = []
-        for ln in lines:
+        def conv(ln):
             r = {k: ln[p - 1:p - 1 + n].strip() for k, (p, n) in LAYOUT_1980.items()}
             r['ANOPAR'] = '19' + r['ANOPAR']
             r['ANIOMAT'] = '19' + r['ANIOMAT'] if r['ANIOMAT'] not in ('', '00') else ''
@@ -143,11 +150,10 @@ def read_rows(src, dr):
             r['CESAREA'] = None
             for k in ('PAISNXM', 'PAISNXP', 'PAISNACM', 'PAISNACP', 'NACIOEM', 'CUANNACM'):
                 r[k] = None
-            rows.append(r)
-        return rows, '1980'
+            return r
+        return '1980', map(conv, lines())
     if width <= 90:
-        rows = []
-        for ln in lines:
+        def conv(ln):
             r = {k: ln[p - 1:p - 1 + n].strip() for k, (p, n) in LAYOUT_1996.items()}
             r['SEMANAS'] = '' if r['SEMANAS'] in ('', '00') else r['SEMANAS']
             r['EDADP'] = '' if r['EDADP'] in ('', '99') else r['EDADP']
@@ -157,10 +163,16 @@ def read_rows(src, dr):
             r['CESAREA'] = None
             r['PAISNXM'] = r['PAISNXP'] = None
             r['NACIOEM'] = r['CUANNACM'] = None
-            rows.append(r)
-        return rows, '1996'
+            return r
+        return '1996', map(conv, lines())
     pos = {v['name']: (v['position'] - 1, v['length']) for v in dr['layout']}
-    return [{k: ln[pos[k][0]:pos[k][0] + pos[k][1]].strip() for k in FIELDS_2016} for ln in lines], '2016'
+    return '2016', ({k: ln[pos[k][0]:pos[k][0] + pos[k][1]].strip() for k in FIELDS_2016} for ln in lines())
+
+
+def read_rows(src, dr):
+    """Return (rows, layout_name)."""
+    fmt, it = iter_rows(src, dr)
+    return list(it), fmt
 
 
 def main():

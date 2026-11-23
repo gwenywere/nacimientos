@@ -1,0 +1,556 @@
+<!doctype html><html lang="en"><head><meta charset=utf8><title>Nacimientos trends</title><meta name="description" content="Births in Spain year by year from 1975 to 2025, from INE microdata: births, children per woman, parents’ age, stillbirths, sex ratio and more."><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@500;600&display=swap">
+<style>
+:root {
+  --bg: #EDEFF0;
+  --surface: #FFFFFF;
+  --fg: #191B1C;
+  --fg-2: #595F61;
+  --muted: #7B8285;
+  --grid: color-mix(in oklab, #C2C9CC 40%, #FFFFFF);
+  --axis: #C2C9CC;
+  --border: rgba(25, 27, 28, 0.09);
+  --accent: #23726C;
+  --on-accent: #FFFFFF;
+  --s1: #40BFB6;
+  --s2: #7740BF;
+  --s3: #BF4049;
+  --s4: #A8741F;
+  --ord1: #40BFB6; --ord2: #329992; --ord3: #23726C; --ord4: #144A46;
+  --seq0: #E0FEFA; --seq1: #50EADF; --seq2: #40BFB6; --seq3: #329992; --seq4: #23726C; --seq5: #144A46;
+  --f-display: "Space Grotesk", "Inter", system-ui, sans-serif;
+  --f-body: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  --r: 10px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #191B1C; --surface: color-mix(in oklab, #191B1C 80%, #383B3D);
+    --fg: #EDEFF0; --fg-2: #C2C9CC; --muted: #9BA3A8;
+    --grid: color-mix(in oklab, #383B3D 70%, #191B1C); --axis: #595F61; --border: rgba(237, 239, 240, 0.08);
+    --accent: #50EADF; --on-accent: #062623;
+    --s1: #40BFB6; --s2: #986CDC; --s3: #E66368; --s4: #E0A85C;
+    --ord1: #23726C; --ord2: #329992; --ord3: #40BFB6; --ord4: #50EADF;
+    --seq0: #144A46; --seq1: #23726C; --seq2: #329992; --seq3: #40BFB6; --seq4: #50EADF; --seq5: #E0FEFA;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #191B1C; --surface: color-mix(in oklab, #191B1C 80%, #383B3D);
+  --fg: #EDEFF0; --fg-2: #C2C9CC; --muted: #9BA3A8;
+  --grid: color-mix(in oklab, #383B3D 70%, #191B1C); --axis: #595F61; --border: rgba(237, 239, 240, 0.08);
+  --accent: #50EADF; --on-accent: #062623;
+  --s1: #40BFB6; --s2: #986CDC; --s3: #E66368; --s4: #E0A85C;
+  --ord1: #23726C; --ord2: #329992; --ord3: #40BFB6; --ord4: #50EADF;
+  --seq0: #144A46; --seq1: #23726C; --seq2: #329992; --seq3: #40BFB6; --seq4: #50EADF; --seq5: #E0FEFA;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--fg); font-family: var(--f-body); font-size: 14px; line-height: 1.5;
+}
+body::before {
+  content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--bg);
+}
+.wrap {
+  max-width: 1240px; margin: 0 auto;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+header.top { padding-block: 32px 18px; }
+.eyebrow {
+  font-family: var(--f-mono); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted);
+}
+h1 {
+  font-family: var(--f-display); font-weight: 600; font-size: clamp(28px, 4vw, 40px); line-height: 1.1;
+  margin: 6px 0 8px; letter-spacing: -0.01em; text-wrap: balance;
+}
+.lede { color: var(--fg-2); max-width: 68ch; margin: 0; }
+
+/* Filters */
+.filters {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5;
+  background: color-mix(in oklab, var(--bg) 92%, transparent); backdrop-filter: blur(6px);
+  border-bottom: 1px solid var(--border);
+}
+.filters .wrap { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 20px; padding-block: 10px; }
+.field { display: flex; align-items: center; gap: 8px; }
+.field > span { font-size: 12px; color: var(--fg-2); font-weight: 500; }
+.seg { display: inline-flex; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 2px; }
+.seg button {
+  font: inherit; font-size: 13px; border: 0; background: transparent; color: var(--fg-2);
+  padding: 5px 12px; border-radius: 6px; cursor: pointer;
+}
+.seg button:hover:not([aria-pressed="true"]):not(:disabled) { color: var(--fg); background: var(--bg); }
+.seg button[aria-pressed="true"] { background: var(--accent); color: var(--on-accent); font-weight: 600; }
+.seg button:disabled { opacity: 0.4; cursor: not-allowed; }
+.seg.seg-wrap { flex-wrap: wrap; }
+.seg.tabs button { font-family: var(--f-display); font-size: 14px; padding: 5px 16px; }
+.seg.tabs button[aria-selected="true"], .seg.tabs button[aria-selected="true"]:hover { background: var(--accent); color: var(--on-accent); font-weight: 600; }
+.seg.tabs button:hover:not([aria-selected="true"]) { color: var(--fg); background: var(--bg); }
+main.loading { opacity: 0.45; transition: opacity 0.15s; }
+select {
+  font: inherit; font-size: 13px; color: var(--fg); background: var(--surface);
+  border: 1px solid var(--border); border-radius: 8px; padding: 6px 10px; max-width: 220px;
+}
+.reset {
+  font: inherit; font-size: 13px; color: var(--accent); background: none; border: 0; cursor: pointer; padding: 4px 2px;
+  text-decoration: underline; text-underline-offset: 3px;
+}
+.status { margin-left: auto; font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
+button:focus-visible, select:focus-visible, summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* KPI tiles */
+.kpis { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 12px; padding-block: 20px 8px; }
+.kpi { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r); padding: 14px 16px; min-width: 0; }
+.kpi .label { font-size: 12px; color: var(--fg-2); }
+.kpi .value { font-family: var(--f-display); font-size: 28px; font-weight: 600; line-height: 1.15; margin-top: 4px; }
+.kpi .value small { font-size: 15px; font-weight: 500; color: var(--fg-2); margin-left: 2px; }
+.kpi .ref { font-size: 12px; color: var(--muted); margin-top: 2px; font-variant-numeric: tabular-nums; min-height: 18px; }
+.kpi .ref b { font-weight: 600; color: var(--fg-2); }
+
+/* Cards */
+.grid { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 12px; padding-block: 12px 24px; }
+.card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--r);
+  padding: 16px 18px 12px; min-width: 0; display: flex; flex-direction: column; gap: 6px;
+}
+.span-7 { grid-column: span 7; } .span-5 { grid-column: span 5; } .span-4 { grid-column: span 4; } .span-6 { grid-column: span 6; } .span-12 { grid-column: span 12; }
+.card h2 { font-family: var(--f-display); font-size: 16px; font-weight: 600; margin: 0; text-wrap: balance; }
+.card .sub { color: var(--fg-2); font-size: 12.5px; margin: 0; }
+.card .head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-start; gap: 8px 16px; }
+.card .vars { margin-top: auto; padding-top: 6px; font-family: var(--f-mono); font-size: 10.5px; color: var(--muted); letter-spacing: 0.02em; }
+.legend { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 12px; color: var(--fg-2); }
+.legend i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
+.legend i.line { height: 3px; border-radius: 2px; width: 14px; vertical-align: 3px; }
+.legend i.dash { width: 0; height: 12px; border-radius: 0; border-left: 1px dashed var(--fg-2); vertical-align: -2px; }
+.chart { width: 100%; position: relative; }
+.scroll-x { overflow-x: auto; }
+.empty { display: grid; place-items: center; min-height: 200px; color: var(--muted); font-size: 13px; text-align: center; padding: 16px; }
+
+svg text { font-family: var(--f-body); }
+.axis text { fill: var(--muted); font-size: 11px; font-variant-numeric: tabular-nums; }
+.axis line, .axis path { stroke: var(--axis); }
+.gridlines line { stroke: var(--grid); }
+.gridlines path { display: none; }
+.lbl { fill: var(--fg-2); font-size: 11.5px; font-variant-numeric: tabular-nums; }
+.lbl-strong { fill: var(--fg); font-size: 11.5px; font-weight: 600; }
+.ref-line { stroke: var(--fg-2); stroke-dasharray: 3 3; stroke-width: 1; }
+.halo { paint-order: stroke; stroke: var(--surface); stroke-width: 4px; stroke-linejoin: round; }
+
+#tip {
+  position: fixed; z-index: 20; pointer-events: none; background: var(--surface); color: var(--fg);
+  border: 1px solid var(--border); border-radius: 8px; padding: 8px 10px; font-size: 12px; line-height: 1.45;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.14); max-width: 260px; font-variant-numeric: tabular-nums;
+}
+#tip .t { font-weight: 600; margin-bottom: 2px; }
+#tip .row { display: flex; align-items: center; gap: 6px; justify-content: space-between; }
+#tip .row span:first-child { color: var(--fg-2); display: inline-flex; align-items: center; gap: 6px; }
+#tip .sw { width: 8px; height: 8px; border-radius: 2px; display: inline-block; }
+
+details { margin-top: 6px; }
+summary { cursor: pointer; font-size: 12.5px; color: var(--accent); width: fit-content; }
+.table-wrap { overflow-x: auto; margin-top: 8px; max-height: 420px; overflow-y: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 12.5px; font-variant-numeric: tabular-nums; }
+th, td { text-align: right; padding: 5px 10px; border-bottom: 1px solid var(--border); white-space: nowrap; }
+th:first-child, td:first-child { text-align: left; }
+th { position: sticky; top: 0; background: var(--surface); color: var(--fg-2); font-weight: 600; }
+
+footer { padding-block: 8px 40px; color: var(--muted); font-size: 12px; }
+footer p { max-width: 90ch; margin: 4px 0; }
+footer code { font-family: var(--f-mono); font-size: 11px; }
+footer a { color: var(--accent); text-underline-offset: 2px; }
+
+@media (max-width: 1000px) {
+  .kpis { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .span-7, .span-5, .span-6, .span-4 { grid-column: span 12; }
+}
+@media (max-width: 560px) {
+  .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .status { margin-left: 0; width: 100%; }
+  .kpi .value { font-size: 24px; }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+
+</style>
+<style>
+/* Trends page: same tokens and cards as the yearly dashboard, plus a nav strip and shared hover across charts. */
+.nav { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 14px; padding-block: 10px; font-size: 13px; color: var(--fg-2); }
+.nav a { color: var(--accent); text-underline-offset: 3px; }
+.nav .years { display: inline-flex; flex-wrap: wrap; gap: 4px 10px; }
+.kpis.k4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.kpi .from { font-size: 12px; color: var(--muted); margin-top: 2px; font-variant-numeric: tabular-nums; }
+.kpi .from b { font-weight: 600; color: var(--fg-2); }
+.hover-rule { stroke: var(--fg-2); stroke-width: 1; }
+.brk { stroke: var(--axis); stroke-dasharray: 2 3; }
+.brk-lbl { fill: var(--muted); font-size: 10px; }
+@media (max-width: 1000px) { .kpis.k4 { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+</style>
+
+<header class="top wrap">
+  <div class="eyebrow">INE · Movimiento Natural de la Población · microdatos de nacimientos y partos</div>
+  <h1>Fifty years of births in Spain, <span class="span-yrs">1975–2025</span></h1>
+  <p class="lede">One point per year, counted from every birth and delivery record INE has published since 1975. Hover or tap a chart to see that year in every chart at once.</p>
+</header>
+
+<div class="filters">
+  <nav class="wrap nav" aria-label="Pages">
+    <a href="index.html">← Yearly dashboard</a>
+    <span class="years">Open a year in detail: <span id="year-links"></span></span>
+    <span class="status" id="status">Loading…</span>
+  </nav>
+</div>
+
+<main class="wrap">
+  <section class="kpis k4" id="kpis" aria-label="First and latest year"></section>
+
+  <section class="grid">
+    <article class="card span-12">
+      <div class="head">
+        <div><h2>Live births per year</h2><p class="sub">All live births registered in Spain</p></div>
+      </div>
+      <div class="chart" id="c-births"></div>
+      <div class="vars">ANOPAR · one record per live birth</div>
+    </article>
+
+    <article class="card span-6">
+      <div class="head">
+        <div><h2>Children per woman</h2><p class="sub">Total fertility rate: births at each age 15–49 ÷ women of that age, summed</p></div>
+        <div class="legend"><span><i class="dash"></i>2.1 = replacement level</span></div>
+      </div>
+      <div class="chart" id="c-tfr"></div>
+      <div class="vars">EDADM · women by age on 1 July, INE table 56934</div>
+    </article>
+
+    <article class="card span-6">
+      <div class="head">
+        <div><h2>Parents' mean age</h2><p class="sub">Age at the birth, in completed years</p></div>
+        <div class="legend" id="lg-age"></div>
+      </div>
+      <div class="chart" id="c-age"></div>
+      <div class="vars">EDADM · EDADP · SORDENV</div>
+    </article>
+
+    <article class="card span-6">
+      <div class="head">
+        <div><h2>Stillbirths and deaths in the first day</h2><p class="sub">Stillborn per 1,000 babies; died within 24 hours per 1,000 born alive</p></div>
+        <div class="legend" id="lg-partos"></div>
+      </div>
+      <div class="chart" id="c-partos"></div>
+      <div class="vars">Deliveries file · CLASIF per baby · from 1980</div>
+    </article>
+
+    <article class="card span-6">
+      <div class="head">
+        <div><h2>Boys per 100 girls</h2><p class="sub">Sex ratio at birth</p></div>
+        <div class="legend"><span><i class="dash"></i>105 = usual ratio</span></div>
+      </div>
+      <div class="chart" id="c-sex"></div>
+      <div class="vars">SEXO</div>
+    </article>
+
+    <article class="card span-6">
+      <div class="head">
+        <div><h2>Births outside marriage</h2><p class="sub">Share of births to mothers who were not married</p></div>
+      </div>
+      <div class="chart" id="c-unm"></div>
+      <div class="vars">ECIVM (1975–79: LEGI, legitimacy)</div>
+    </article>
+
+    <article class="card span-6">
+      <div class="head">
+        <div><h2>Mothers from abroad</h2><p class="sub">Share of births. Nationality is recorded from 1996, country of birth from 2007</p></div>
+        <div class="legend" id="lg-ab"></div>
+      </div>
+      <div class="chart" id="c-ab"></div>
+      <div class="vars">PAISNACM · PAISNXM</div>
+    </article>
+
+    <article class="card span-6">
+      <div class="head">
+        <div><h2>First, second, third or later child</h2><p class="sub">Share of births by the baby's place among the mother's live-born children</p></div>
+        <div class="legend" id="lg-order"></div>
+      </div>
+      <div class="chart" id="c-order"></div>
+      <div class="vars">SORDENV</div>
+    </article>
+
+    <article class="card span-6">
+      <div class="head">
+        <div><h2>Very young and older mothers</h2><p class="sub">Share of births to mothers under 20 and aged 40 or more</p></div>
+        <div class="legend" id="lg-young"></div>
+      </div>
+      <div class="chart" id="c-young"></div>
+      <div class="vars">EDADM</div>
+    </article>
+
+    <article class="card span-6">
+      <div class="head">
+        <div><h2>Twins and other multiple births</h2><p class="sub">Share of babies born in a delivery of two or more</p></div>
+      </div>
+      <div class="chart" id="c-mult"></div>
+      <div class="vars">MULTIPLI</div>
+    </article>
+
+    <article class="card span-12">
+      <div class="head">
+        <div><h2>Preterm, low weight and caesarean</h2><p class="sub">Share of births. Weight is recorded from 1980, caesarean from 2007; preterm = under 37 weeks</p></div>
+        <div class="legend" id="lg-health"></div>
+      </div>
+      <div class="chart" id="c-health"></div>
+      <div class="vars">INTERSEM · PESON · CESAREA</div>
+    </article>
+  </section>
+</main>
+
+<footer class="wrap">
+  <p>Source: <a href="https://ine.es/dyngs/INEbase/es/operacion.htm?c=Estadistica_C&amp;cid=1254736177007&amp;menu=resultados&amp;idp=1254735573002#_tabs-1254736195443" target="_blank" rel="noopener noreferrer">INE, Movimiento Natural de la Población</a>, anonymised microdata: births (one record per live birth) and deliveries (one record per delivery, with every baby's outcome). Children per woman uses women by single year of age on 1 July from <a href="https://www.ine.es/jaxiT3/Tabla.htm?t=56934" target="_blank" rel="noopener noreferrer">INE table 56934</a>.</p>
+  <p>INE changed the record layout in 1980, 1996 and 2007; dotted lines mark a change where it affects a chart. 1975–79 records legitimacy instead of marital status, and has no weights. The 1975–79 deliveries files cover multiple deliveries only, so stillbirths start in 1980. Before 1996 the files record neither nationality nor country of birth.</p>
+  <p>Quirks in the files themselves, left as they are: caesareans drop to about 18% in 2008 and 2009 (26–27% in the years around them), which looks like incomplete recording; in 2007 the share of first children jumps by four points and fathers' mean age dips; in 2007 and 2008 the mother's country of birth is filled in only when it is not Spain, so a blank is counted as Spain.</p>
+  <p id="foot-gaps"></p>
+</footer>
+
+<div id="tip" hidden></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+<script>
+const $ = (s) => document.querySelector(s);
+const fmt = d3.format(',');
+const css = (n) => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const DASH_YEARS = ['2025', '2015', '2006', '1995', '1985', '1975']; // years with a yearly dashboard
+let T = null, Y = [], hoverYear = null;
+const charts = [];
+
+// ---------- tooltip ----------
+const tip = $('#tip');
+function showTip(ev, html) {
+  tip.innerHTML = html; tip.hidden = false;
+  const pad = 14, r = tip.getBoundingClientRect();
+  let x = ev.clientX + pad, y = ev.clientY + pad;
+  if (x + r.width > innerWidth - 8) x = ev.clientX - r.width - pad;
+  if (y + r.height > innerHeight - 8) y = ev.clientY - r.height - pad;
+  tip.style.left = Math.max(8, x) + 'px'; tip.style.top = Math.max(8, y) + 'px';
+}
+const hideTip = () => { tip.hidden = true; };
+const row = (label, value, color) =>
+  `<div class="row"><span>${color ? `<i class="sw" style="background:${color}"></i>` : ''}${label}</span><b>${value}</b></div>`;
+
+function frame(el, height, m) {
+  el.innerHTML = '';
+  const W = el.clientWidth;
+  const svg = d3.select(el).append('svg').attr('width', W).attr('height', height).attr('viewBox', `0 0 ${W} ${height}`).attr('role', 'img');
+  const g = svg.append('g').attr('transform', `translate(${m.l},${m.t})`);
+  return { svg, g, w: Math.max(10, W - m.l - m.r), h: height - m.t - m.b };
+}
+function legend(id, series) {
+  $(id).innerHTML = series.map((s) => `<span><i class="line" style="background:${s.color}"></i>${s.label}</span>`).join('');
+}
+
+// ---------- one line chart over the years ----------
+// opt: { series: [{ label, color, get(d) }], fmt(v), axisFmt(v), zero, refs: [v], breaks: [{ year, label }], height, endLabels, annotate, tipExtra }
+function lineChart(id, opt) {
+  const el = $(id);
+  const narrow = el.clientWidth < 520;
+  const m = { t: 14, r: opt.endLabels ? (narrow ? 44 : 56) : 14, b: 24, l: 44 };
+  const { svg, g, w, h } = frame(el, opt.height || 220, m);
+  const yrs = Y.map(Number);
+  const x = d3.scaleLinear().domain(d3.extent(yrs)).range([0, w]);
+  const pts = opt.series.map((s) => Y.map((yr) => ({ yr: +yr, v: s.get(T.years[yr]) })));
+  const vals = pts.flat().map((p) => p.v).filter((v) => v != null).concat(opt.refs || []);
+  let [lo, hi] = d3.extent(vals);
+  const pad = (hi - lo) * 0.08 || 1;
+  lo = opt.zero ? 0 : lo - pad; hi += pad;
+  const y = d3.scaleLinear().domain([lo, hi]).nice(5).range([h, 0]);
+  g.append('g').attr('class', 'gridlines').call(d3.axisLeft(y).ticks(5).tickSize(-w).tickFormat(''));
+  g.append('g').attr('class', 'axis').call(d3.axisLeft(y).ticks(5).tickSize(0).tickPadding(8).tickFormat(opt.axisFmt || opt.fmt)).select('.domain').remove();
+  const ticks = x.domain()[1] - x.domain()[0] >= 40 ? d3.range(1975, x.domain()[1] + 1, narrow ? 10 : 5) : null;
+  g.append('g').attr('class', 'axis').attr('transform', `translate(0,${h})`)
+    .call(d3.axisBottom(x).tickValues(ticks).tickFormat(d3.format('d')).tickSizeOuter(0));
+  (opt.breaks || []).forEach((b) => {
+    g.append('line').attr('class', 'brk').attr('x1', x(b.year - 0.5)).attr('x2', x(b.year - 0.5)).attr('y1', 0).attr('y2', h);
+    g.append('text').attr('class', 'brk-lbl halo').attr('x', x(b.year - 0.5) + 4).attr('y', 9).text(b.label);
+  });
+  (opt.refs || []).forEach((v) => g.append('line').attr('class', 'ref-line').attr('x1', 0).attr('x2', w).attr('y1', y(v)).attr('y2', y(v)));
+  const line = d3.line().defined((p) => p.v != null).x((p) => x(p.yr)).y((p) => y(p.v)).curve(d3.curveMonotoneX);
+  pts.forEach((p, i) => {
+    g.append('path').attr('fill', 'none').attr('stroke', opt.series[i].color).attr('stroke-width', 2)
+      .attr('stroke-linejoin', 'round').attr('d', line(p));
+    // single isolated years would not show as a line: give them a dot
+    p.forEach((q, j) => {
+      if (q.v != null && (p[j - 1]?.v == null) && (p[j + 1]?.v == null))
+        g.append('circle').attr('cx', x(q.yr)).attr('cy', y(q.v)).attr('r', 2.5).attr('fill', opt.series[i].color);
+    });
+    if (opt.endLabels) {
+      const last = [...p].reverse().find((q) => q.v != null);
+      if (last) g.append('text').attr('class', 'lbl-strong halo').attr('x', x(last.yr) + 6).attr('y', y(last.v) + 4).text(opt.fmt(last.v));
+    }
+  });
+  if (opt.annotate) opt.annotate(g, x, y, pts);
+
+  // hover: a rule and dots for the shared year
+  const hov = g.append('g').attr('pointer-events', 'none').style('display', 'none');
+  hov.append('line').attr('class', 'hover-rule').attr('y1', 0).attr('y2', h);
+  const dots = opt.series.map((s) => hov.append('circle').attr('r', 4).attr('fill', s.color).attr('stroke', css('--surface')).attr('stroke-width', 2));
+  const setHover = (yr) => {
+    if (yr == null) { hov.style('display', 'none'); return; }
+    hov.style('display', null);
+    hov.select('line').attr('x1', x(yr)).attr('x2', x(yr));
+    dots.forEach((d, i) => {
+      const v = opt.series[i].get(T.years[yr]);
+      d.style('display', v == null ? 'none' : null).attr('cx', x(yr)).attr('cy', v == null ? 0 : y(v));
+    });
+  };
+  const yearAt = (ev) => {
+    const [mx] = d3.pointer(ev, g.node());
+    return String(Math.round(Math.min(Math.max(x.invert(mx), x.domain()[0]), x.domain()[1])));
+  };
+  const onMove = (ev) => {
+      const yr = yearAt(ev);
+      setAllHover(yr);
+      const d = T.years[yr];
+      if (!d) return;
+      showTip(ev, `<div class="t">${yr}</div>` + opt.series.map((s) => {
+        const v = s.get(d);
+        return row(s.label, v == null ? 'not recorded' : opt.fmt(v), opt.series.length > 1 ? s.color : null);
+      }).join('') + (opt.tipExtra ? opt.tipExtra(d, yr) : ''));
+  };
+  g.append('rect').attr('width', w).attr('height', h).attr('fill', 'transparent')
+    .on('pointermove', onMove).on('pointerdown', onMove) // pointerdown: a tap on a phone
+    .on('pointerleave', (ev) => { if (ev.pointerType !== 'touch') { setAllHover(null); hideTip(); } });
+  charts.push(setHover);
+  if (hoverYear) setHover(hoverYear);
+}
+function setAllHover(yr) { hoverYear = yr; charts.forEach((f) => f(yr)); }
+
+// ---------- formats ----------
+const f1 = (v) => v.toFixed(1);
+const fp = (v) => v.toFixed(1) + '%';
+const fp0 = (v) => Math.round(v) + '%';
+const fk = (v) => d3.format('.3~s')(v);
+
+// ---------- KPI tiles ----------
+function kpis() {
+  const first = Y[0], last = Y[Y.length - 1];
+  const tile = (label, get, show, unit = '', from = first) => {
+    const a = get(T.years[from]), b = get(T.years[last]);
+    return `<div class="kpi"><div class="label">${label}, ${last}</div><div class="value">${b == null ? '–' : show(b)}${unit ? `<small>${unit}</small>` : ''}</div>`
+      + `<div class="from">${from}: <b>${a == null ? '–' : show(a)}${unit ? ' ' + unit : ''}</b></div></div>`;
+  };
+  const firstPartos = Y.find((yr) => T.years[yr].stillRate != null);
+  $('#kpis').innerHTML = [
+    tile('Live births', (d) => d.births, fmt),
+    tile('Children per woman', (d) => d.tfr, (v) => v.toFixed(2)),
+    tile("Mother's mean age at first child", (d) => d.meanAgeM1, f1, 'years'),
+    tile('Stillborn per 1,000 babies', (d) => d.stillRate, f1, '', firstPartos),
+  ].join('');
+}
+
+// ---------- charts ----------
+function renderAll() {
+  charts.length = 0;
+  const S = (k) => css(k);
+  const births = { label: 'Live births', color: S('--s1'), get: (d) => d.births };
+  lineChart('#c-births', {
+    series: [births], fmt, axisFmt: fk, zero: true, height: 260, endLabels: true,
+    annotate: (g, x, y, [p]) => {
+      // label each turning point: the highest or lowest value within 6 years either side
+      const ok = p.filter((q) => q.v != null), W = 6;
+      ok.forEach((q) => {
+        const near = ok.filter((o) => Math.abs(o.yr - q.yr) <= W);
+        const hi = q.v === d3.max(near, (o) => o.v), lo = q.v === d3.min(near, (o) => o.v);
+        if (!hi && !lo) return;
+        g.append('circle').attr('cx', x(q.yr)).attr('cy', y(q.v)).attr('r', 3.5).attr('fill', S('--s1'));
+        g.append('text').attr('class', 'lbl halo').attr('x', x(q.yr)).attr('y', y(q.v) + (hi ? -10 : 18))
+          .attr('text-anchor', q.yr - ok[0].yr < 4 ? 'start' : ok[ok.length - 1].yr - q.yr < 4 ? 'end' : 'middle')
+          .text(`${fmt(q.v)} in ${q.yr}`);
+      });
+    },
+  });
+  lineChart('#c-tfr', {
+    series: [{ label: 'Children per woman', color: S('--s1'), get: (d) => d.tfr }],
+    fmt: (v) => v.toFixed(2), axisFmt: f1, refs: [2.1], endLabels: true,
+    tipExtra: (d) => d.tfr == null ? '' : row('Mean age of mothers', d.meanAgeM == null ? '–' : f1(d.meanAgeM)),
+  });
+  const age = [
+    { label: 'Father', color: S('--s2'), get: (d) => d.meanAgeP },
+    { label: 'Mother', color: S('--s1'), get: (d) => d.meanAgeM },
+    { label: 'Mother, first child', color: S('--ord3'), get: (d) => d.meanAgeM1 },
+  ];
+  legend('#lg-age', age);
+  lineChart('#c-age', { series: age, fmt: f1, endLabels: true });
+  const partos = [
+    { label: 'Stillborn per 1,000 babies', color: S('--s3'), get: (d) => d.stillRate },
+    { label: 'Died within 24 h per 1,000 born alive', color: S('--s2'), get: (d) => d.died24Rate },
+  ];
+  legend('#lg-partos', partos);
+  lineChart('#c-partos', {
+    series: partos, fmt: (v) => v.toFixed(2), axisFmt: f1, zero: true, endLabels: true,
+    tipExtra: (d) => d.stillborn == null ? '' : row('Stillborn', fmt(d.stillborn)) + row('Died within 24 h', fmt(d.died24)),
+  });
+  lineChart('#c-sex', {
+    series: [{ label: 'Boys per 100 girls', color: S('--s1'), get: (d) => d.sexRatio }],
+    fmt: f1, refs: [105], endLabels: true,
+  });
+  lineChart('#c-unm', {
+    series: [{ label: 'Births outside marriage', color: S('--s2'), get: (d) => d.unmarried }],
+    fmt: fp, axisFmt: fp0, zero: true, endLabels: true, breaks: [{ year: 1980, label: 'legitimacy → marital status' }],
+  });
+  const ab = [
+    { label: 'Foreign nationality', color: S('--s2'), get: (d) => d.abroadNat },
+    { label: 'Born abroad', color: S('--s1'), get: (d) => d.abroadBirth },
+  ];
+  legend('#lg-ab', ab);
+  lineChart('#c-ab', { series: ab, fmt: fp, axisFmt: fp0, zero: true, endLabels: true });
+  const order = [
+    { label: 'First child', color: S('--ord1'), get: (d) => d.order?.[0] },
+    { label: 'Second', color: S('--ord3'), get: (d) => d.order?.[1] },
+    { label: 'Third or later', color: S('--s3'), get: (d) => d.order?.[2] },
+  ];
+  legend('#lg-order', order);
+  lineChart('#c-order', { series: order, fmt: fp, axisFmt: fp0, zero: true, endLabels: true });
+  const young = [
+    { label: 'Under 20', color: S('--s2'), get: (d) => d.teen },
+    { label: '40 or older', color: S('--s4'), get: (d) => d.over40 },
+  ];
+  legend('#lg-young', young);
+  lineChart('#c-young', { series: young, fmt: fp, axisFmt: fp0, zero: true, endLabels: true });
+  lineChart('#c-mult', {
+    series: [{ label: 'Babies from multiple births', color: S('--s1'), get: (d) => d.multiple }],
+    fmt: (v) => v.toFixed(2) + '%', axisFmt: fp, zero: true, endLabels: true,
+  });
+  const health = [
+    { label: 'Caesarean', color: S('--s2'), get: (d) => d.caesarean },
+    { label: 'Preterm', color: S('--s3'), get: (d) => d.preterm },
+    { label: 'Under 2,500 g', color: S('--s4'), get: (d) => d.lowWeight },
+  ];
+  legend('#lg-health', health);
+  lineChart('#c-health', { series: health, fmt: fp, axisFmt: fp0, zero: true, endLabels: true, height: 240 });
+}
+
+// ---------- load ----------
+fetch('trends.json').then((r) => r.json()).then((t) => {
+  T = t;
+  Y = Object.keys(t.years).filter((k) => t.years[k].births != null).sort();
+  const first = Y[0], last = Y[Y.length - 1];
+  document.querySelector('.span-yrs').textContent = `${first}–${last}`;
+  document.title = `Nacimientos ${first}–${last}: trends`;
+  $('#status').textContent = `${Y.length} years · ${fmt(d3.sum(Y, (k) => t.years[k].births))} births`;
+  $('#year-links').innerHTML = DASH_YEARS.filter((yr) => t.years[yr]).sort()
+    .map((yr) => `<a href="index.html?year=${yr}">${yr}</a>`).join(' ');
+  const missing = d3.range(+first, +last + 1).map(String).filter((yr) => !t.years[yr] || t.years[yr].births == null);
+  const noPartos = Y.filter((yr) => +yr >= 1980 && t.years[yr].stillRate == null);
+  $('#foot-gaps').textContent = [
+    missing.length ? `No births file for ${missing.join(', ')}.` : '',
+    noPartos.length ? `No deliveries file for ${noPartos.join(', ')}.` : '',
+  ].join(' ');
+  kpis();
+  renderAll();
+}).catch((e) => { $('#status').textContent = 'Could not load trends.json'; console.error(e); });
+
+// on a phone the tooltip stays after a tap; tapping outside the charts clears it
+document.addEventListener('pointerdown', (ev) => { if (!ev.target.closest('.chart')) { setAllHover(null); hideTip(); } });
+let rt;
+addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(() => T && renderAll(), 150); });
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => T && renderAll());
+</script>

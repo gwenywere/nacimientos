@@ -69,6 +69,7 @@ h1 {
   margin: 6px 0 8px; letter-spacing: -0.01em; text-wrap: balance;
 }
 .lede { color: var(--fg-2); max-width: 68ch; margin: 0; }
+.trends-link { color: var(--accent); font-weight: 500; text-underline-offset: 3px; white-space: nowrap; }
 
 /* Filters */
 .filters {
@@ -179,7 +180,7 @@ footer a { color: var(--accent); text-underline-offset: 2px; }
 <header class="top wrap">
   <div class="eyebrow">INE · Movimiento Natural de la Población · microdatos de nacimientos</div>
   <h1>Nacimientos <span class="yr">2025</span></h1>
-  <p class="lede">Every live birth registered in Spain in <span class="yr">2025</span>, one record per birth. Switch year with the tabs. Filter by where the mother was born and the province she lives in. Click a province in the ranking to filter by it.</p>
+  <p class="lede">Every live birth registered in Spain in <span class="yr">2025</span>, one record per birth. Switch year with the tabs. Filter by where the mother was born and the province she lives in. Click a province in the ranking to filter by it. <a class="trends-link" href="trends.html">See every year from 1975 to 2025 →</a></p>
 </header>
 
 <div class="filters">
@@ -507,6 +508,10 @@ const MIX = {
 };
 const mixShare = (s) => { const m = s.mixed[state.mixDef][state.union]; return m.k ? m.d / m.k : NaN; };
 try { Object.assign(state, JSON.parse(localStorage.getItem('nac-state') || '{}')); } catch (e) {}
+// trends.html links here as index.html?year=1985
+const qYear = new URLSearchParams(location.search).get('year');
+if (YEARS[qYear]) state.year = qYear;
+if (qYear) history.replaceState(null, '', location.pathname); // later tab changes are remembered as usual
 if (!YEARS[state.year]) state.year = '2025';
 const saveState = () => { try { localStorage.setItem('nac-state', JSON.stringify(state)); } catch (e) {} };
 
