@@ -16,6 +16,7 @@ AGE_GROUPS = ['<20', '20–24', '25–29', '30–34', '35–39', '40–44', '45+
 W_EDGES = list(range(750, 5001, 250))
 WEEKS = (22, 43)
 INT_BIN, INT_MAX = 6, 180
+WED_MAX = 60  # months
 SPAIN = '108'
 TOP_COUNTRIES, TOP_PARENT = 15, 10
 
@@ -54,19 +55,30 @@ def new_slice(m_len, p_len, n_marital=4):
         'n': 0, 'ageM': [0] * m_len, 'ageP': [0] * p_len,
         'ageMc': {k: [0] * m_len for k in CONTINENTS}, 'agePc': {k: [0] * p_len for k in CONTINENTS}, 'first': 0, 'ces': 0, 'pre': 0, 'mult': 0,
         'married': 0, 'lbw': 0, 'wKnown': 0, 'month': [0] * 12,
-        'byAge': {k: [0] * 7 for k in ('n', 'ces', 'pre', 'lbw', 'wKnown')} | {'order': [[0] * 7 for _ in range(4)]},
+        'byAge': {k: [0] * 7 for k in ('n', 'ces', 'pre', 'lbw', 'wKnown', 'mult', 'cmp')} | {'order': [[0] * 7 for _ in range(4)]},
         'heat': [[0] * nb for _ in range(nw)], 'interval': [0] * (INT_MAX // INT_BIN + 1),
         'marital': [0] * n_marital, 'mixed': {'birth': mix(), 'nat': mix()}, 'countries': Counter(),
+        'cmp': 0,
+        # complications by mother's continent x age group
+        'cmpC': {k: {'n': [0] * 7, 'cmp': [0] * 7} for k in CONTINENTS},
+        # [boys, girls]
+        'sex': {'all': [0, 0], 'order': [[0, 0] for _ in range(4)], 'cont': {k: [0, 0] for k in CONTINENTS}},
+        # first births to married mothers: months from wedding to birth (0..WED_MAX, last bin = more than WED_MAX)
+        'wed': [0] * (WED_MAX + 2), 'wedNo': 0,
+        # mothers born abroad who hold Spanish nationality; CUANNACM: when they got it
+        'natEs': {'n': 0, 'later': 0, 'birth': 0}, 'countriesEs': Counter(),
     }
 
 
 FIELDS_2016 = ('ANOPAR', 'MESPAR', 'PROREM', 'MULTIPLI', 'CESAREA', 'INTERSEM', 'SEMANAS', 'EDADM', 'EDADP',
-               'ECIVM', 'PAISNXM', 'PAISNXP', 'PAISNACM', 'PAISNACP', 'PESON', 'INIHA', 'SORDENV')
+               'ECIVM', 'PAISNXM', 'PAISNXP', 'PAISNACM', 'PAISNACP', 'PESON', 'INIHA', 'SORDENV',
+               'SEXO', 'NORMA', 'MESMAT', 'ANIOMAT', 'NACIOEM', 'CUANNACM')
 # INE "diseño anonimizado de nacimientos desde 1996" (85-char records, used up to 2006).
 # Maps the old fields onto the 2016+ names; None = not recorded in that layout.
 LAYOUT_1996 = {'ANOPAR': (8, 4), 'MESPAR': (6, 2), 'PROREM': (30, 2), 'MULTIPLI': (16, 1), 'INTERSEM': (17, 1),
                'SEMANAS': (12, 2), 'EDADM': (58, 2), 'EDADP': (67, 2), 'CAS': (40, 1), 'PAISNACM': (80, 3),
-               'PAISNACP': (83, 3), 'PESON': (72, 4), 'INIHA': (64, 3), 'SORDENV': (32, 2)}
+               'PAISNACP': (83, 3), 'PESON': (72, 4), 'INIHA': (64, 3), 'SORDENV': (32, 2),
+               'SEXO': (69, 1), 'NORMA': (18, 1), 'MESMAT': (42, 2), 'ANIOMAT': (44, 4)}
 MARITAL_2016 = ['Married', 'Single', 'Separated or divorced', 'Widowed']
 MARITAL_1996 = ['Married', 'Not married']
 
@@ -86,6 +98,7 @@ def read_rows(src, dr):
             r['ECIVM'] = r.pop('CAS')  # 1 married, 2 not married
             r['CESAREA'] = None
             r['PAISNXM'] = r['PAISNXP'] = None
+            r['NACIOEM'] = r['CUANNACM'] = None
             rows.append(r)
         return rows, '1996'
     pos = {v['name']: (v['position'] - 1, v['length']) for v in dr['layout']}
@@ -134,6 +147,19 @@ def main():
         wk = int(r['SEMANAS']) if r['SEMANAS'] else None
         married = r['ECIVM'] == '1'
         contM, contP = continent(r[ORIG]), continent(r[ORIG_P])
+        mult = r['MULTIPLI'] not in ('', '1')
+        cmp = r['NORMA'] == '2'
+        boy = r['SEXO'] == '1'
+        sx = 0 if boy else 1 if r['SEXO'] == '6' else None
+        wed = None  # months from wedding to a married mother's first birth
+        if married and order == 1:
+            if r['MESMAT'].isdigit() and r['ANIOMAT'].isdigit() and 1 <= int(r['MESMAT']) <= 12:
+                d = (int(r['ANOPAR']) * 12 + int(r['MESPAR'])) - (int(r['ANIOMAT']) * 12 + int(r['MESMAT']))
+                wed = d if d >= 0 else None  # a wedding after the birth is a recording error
+            else:
+                wed = 'no'
+        bornAbroad = not old and r[ORIG] not in ('', SPAIN)
+        esNat = bornAbroad and r['NACIOEM'] == '1'
         for s in targets:
             s['n'] += 1
             s['ageM'][am - mAge[0]] += 1
@@ -146,13 +172,34 @@ def main():
             s['first'] += order == 1
             s['ces'] += r['CESAREA'] == '1'
             s['pre'] += r['INTERSEM'] == '2'
-            s['mult'] += r['MULTIPLI'] not in ('', '1')
+            s['mult'] += mult
+            s['cmp'] += cmp
             s['married'] += married
             s['month'][int(r['MESPAR']) - 1] += 1
             b = s['byAge']
             b['n'][ag] += 1
             b['ces'][ag] += r['CESAREA'] == '1'
             b['pre'][ag] += r['INTERSEM'] == '2'
+            b['mult'][ag] += mult
+            b['cmp'][ag] += cmp
+            if contM:
+                s['cmpC'][contM]['n'][ag] += 1
+                s['cmpC'][contM]['cmp'][ag] += cmp
+            if sx is not None:
+                s['sex']['all'][sx] += 1
+                if order:
+                    s['sex']['order'][min(order, 4) - 1][sx] += 1
+                if contM:
+                    s['sex']['cont'][contM][sx] += 1
+            if wed == 'no':
+                s['wedNo'] += 1
+            elif wed is not None:
+                s['wed'][min(wed, WED_MAX + 1)] += 1
+            if esNat:
+                s['natEs']['n'] += 1
+                s['natEs']['later'] += r['CUANNACM'] == '2'
+                s['natEs']['birth'] += r['CUANNACM'] == '1'
+                s['countriesEs'][r[ORIG]] += 1
             if order:
                 b['order'][min(order, 4) - 1][ag] += 1
             if w is not None:
@@ -196,6 +243,7 @@ def main():
             top = s['countries'].most_common(TOP_COUNTRIES)
             s['countriesOther'] = sum(s['countries'].values()) - sum(v for _, v in top) + unknown
             s['countries'] = dict(top)
+            s['countriesEs'] = {c: s['countriesEs'][c] for c in s['countries']}
             used.update(s['countries'])
             for key in ('birth', 'nat'):
                 for g in s['mixed'][key].values():
@@ -208,8 +256,8 @@ def main():
         'year': int(year), 'n': len(rows), 'provinces': provinces,
         'countries': {**{'155': 'Serbia y Montenegro'}, **dr['codelists']['TPAIS']},  # 155: pre-2006 code
         'ageGroups': AGE_GROUPS, 'mAge': mAge, 'pAge': pAge, 'weeks': list(WEEKS), 'wEdges': W_EDGES,
-        'intBin': INT_BIN, 'intMax': INT_MAX, 'layout': fmt, 'marital': marital_labels,
-        'avail': {'ces': not old, 'birthCountry': not old}, 'missing': {k: missing[k] for k in ('weeks', 'weight', 'fatherAge', 'residesAbroad')},
+        'intBin': INT_BIN, 'intMax': INT_MAX, 'wedMax': WED_MAX, 'layout': fmt, 'marital': marital_labels,
+        'avail': {'ces': not old, 'birthCountry': not old, 'natEs': not old}, 'missing': {k: missing[k] for k in ('weeks', 'weight', 'fatherAge', 'residesAbroad')},
     }
     with open(a.out, 'w', encoding='utf-8') as f:
         json.dump({'meta': meta, 'slices': out_slices}, f, ensure_ascii=False, separators=(',', ':'))

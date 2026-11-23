@@ -18,6 +18,7 @@
   --s1: #40BFB6;
   --s2: #7740BF;
   --s3: #BF4049;
+  --s4: #A8741F;
   --ord1: #40BFB6; --ord2: #329992; --ord3: #23726C; --ord4: #144A46;
   --seq0: #E0FEFA; --seq1: #50EADF; --seq2: #40BFB6; --seq3: #329992; --seq4: #23726C; --seq5: #144A46;
   --f-display: "Space Grotesk", "Inter", system-ui, sans-serif;
@@ -31,7 +32,7 @@
     --fg: #EDEFF0; --fg-2: #C2C9CC; --muted: #9BA3A8;
     --grid: color-mix(in oklab, #383B3D 70%, #191B1C); --axis: #595F61; --border: rgba(237, 239, 240, 0.08);
     --accent: #50EADF; --on-accent: #062623;
-    --s1: #40BFB6; --s2: #986CDC; --s3: #E66368;
+    --s1: #40BFB6; --s2: #986CDC; --s3: #E66368; --s4: #E0A85C;
     --ord1: #23726C; --ord2: #329992; --ord3: #40BFB6; --ord4: #50EADF;
     --seq0: #144A46; --seq1: #23726C; --seq2: #329992; --seq3: #40BFB6; --seq4: #50EADF; --seq5: #E0FEFA;
     color-scheme: dark;
@@ -42,7 +43,7 @@
   --fg: #EDEFF0; --fg-2: #C2C9CC; --muted: #9BA3A8;
   --grid: color-mix(in oklab, #383B3D 70%, #191B1C); --axis: #595F61; --border: rgba(237, 239, 240, 0.08);
   --accent: #50EADF; --on-accent: #062623;
-  --s1: #40BFB6; --s2: #986CDC; --s3: #E66368;
+  --s1: #40BFB6; --s2: #986CDC; --s3: #E66368; --s4: #E0A85C;
   --ord1: #23726C; --ord2: #329992; --ord3: #40BFB6; --ord4: #50EADF;
   --seq0: #144A46; --seq1: #23726C; --seq2: #329992; --seq3: #40BFB6; --seq4: #50EADF; --seq5: #E0FEFA;
   color-scheme: dark;
@@ -265,6 +266,23 @@ footer a { color: var(--accent); text-underline-offset: 2px; }
       <div class="vars">MESPAR</div>
     </article>
 
+    <article class="card span-6">
+      <div class="head">
+        <div><h2>Twins and multiple births by mother's age</h2><p class="sub" id="mult-sub">Percent of babies born in a delivery of two or more</p></div>
+      </div>
+      <div class="chart" id="c-mult"></div>
+      <div class="vars">MULTIPLI · EDADM</div>
+    </article>
+
+    <article class="card span-6">
+      <div class="head">
+        <div><h2>Complications by mother's age and origin</h2><p class="sub" id="cmp-sub">Percent of births recorded as a delivery with complications</p></div>
+        <div class="legend" id="cmp-legend"></div>
+      </div>
+      <div class="chart" id="c-cmp"></div>
+      <div class="vars">NORMA · EDADM · PAISNXM</div>
+    </article>
+
     <article class="card span-7">
       <div class="head">
         <div><h2>Gestation and birth weight</h2><p class="sub">Births by weeks of pregnancy and weight band (250 g). Color on a log scale. Dashed lines mark the preterm and low-weight thresholds.</p></div>
@@ -280,6 +298,24 @@ footer a { color: var(--accent); text-underline-offset: 2px; }
       </div>
       <div class="chart" id="c-interval"></div>
       <div class="vars">INIHA · SORDENV &gt; 1</div>
+    </article>
+
+    <article class="card span-5">
+      <div class="head">
+        <div><h2>Boys per 100 girls</h2><p class="sub">Sex ratio at birth. Whiskers show the 95% range expected from chance alone.</p></div>
+        <div class="legend"><span><i class="dash"></i>105 = usual ratio at birth</span></div>
+      </div>
+      <div class="chart" id="c-sex"></div>
+      <div class="vars">SEXO · SORDENV · PAISNXM</div>
+    </article>
+
+    <article class="card span-7">
+      <div class="head">
+        <div><h2>Time between wedding and first birth</h2><p class="sub" id="wed-sub">Married mothers' first births, months since the wedding</p></div>
+        <div class="legend"><span><i style="background:var(--s2)"></i>Under 8 months: likely conceived before the wedding</span><span><i style="background:var(--s1)"></i>8 months or more</span></div>
+      </div>
+      <div class="chart" id="c-wed"></div>
+      <div class="vars">MESMAT · ANIOMAT · MESPAR · ANOPAR · ECIVM · SORDENV = 1. Month precision: under 8 months means the birth month is at most 7 months after the wedding month.</div>
     </article>
 
     <article class="card span-12">
@@ -316,7 +352,15 @@ footer a { color: var(--accent); text-underline-offset: 2px; }
         <div><h2>Mother's marital status</h2><p class="sub">Share of births</p></div>
       </div>
       <div class="chart" id="c-marital"></div>
-      <div class="vars">ECIVM · MULTIPLI</div>
+      <div class="vars">ECIVM</div>
+    </article>
+
+    <article class="card span-12">
+      <div class="head">
+        <div><h2>Mothers born abroad who became Spanish</h2><p class="sub" id="nat-sub">Share of mothers born abroad who hold Spanish nationality, by country of birth</p></div>
+      </div>
+      <div class="chart" id="c-nat"></div>
+      <div class="vars">PAISNXM · NACIOEM · CUANNACM — top 15 countries of birth, sorted by share</div>
     </article>
 
     <article class="card span-4">
@@ -381,7 +425,8 @@ const byNat = () => !!(DATA && DATA.meta.avail && !DATA.meta.avail.birthCountry)
 const hasCes = () => !(DATA && DATA.meta.avail && !DATA.meta.avail.ces);
 const originTxt = (o) => (byNat() ? ORIGIN_NAT : ORIGIN_TXT)[o];
 const OLD_VARS = [[/CESAREA · /g, ''], [/SORDENV/g, 'NUMHV'], [/INTERSEM/g, 'MATURI'], [/SEMANAS/g, 'SEMGES'], [/INIHA/g, 'ININHA'],
-  [/PROREM/g, 'PROM'], [/PAISNXM/g, 'NACMAD'], [/PAISNACM/g, 'NACMAD'], [/PAISNACP/g, 'NACPAD'], [/ECIVM/g, 'CAS'], [/MULTIPLI/g, 'MULTI']];
+  [/PROREM/g, 'PROM'], [/PAISNXM/g, 'NACMAD'], [/PAISNACM/g, 'NACMAD'], [/PAISNACP/g, 'NACPAD'], [/ECIVM/g, 'CAS'], [/MULTIPLI/g, 'MULTI'],
+  [/NORMA\b/g, 'NORMAL'], [/ANIOMAT/g, 'ANOMAT']];
 function mapVars() {
   const old = DATA.meta.layout === '1996';
   document.querySelectorAll('.vars').forEach((el) => {
@@ -716,6 +761,171 @@ function drawInterval(s) {
     .attr('text-anchor', x(medBin) > w * 0.6 ? 'end' : 'start').text(`median: ${lbl(mp)}`);
 }
 
+// ---------- shared by the new charts ----------
+const MIN_N = 200; // groups with fewer births are faded or left out: their rates swing on a handful of cases
+const CONTS = ['es', 'eu', 'af', 'am', 'as'];
+const CONT_COLOR = { es: '--fg-2', eu: '--s2', af: '--s3', am: '--s1', as: '--s4' };
+const contName = (k) => ({ es: byNat() ? 'Spanish' : 'Spain', eu: 'Rest of Europe', af: 'Africa', am: 'Americas', as: 'Asia' })[k];
+
+// ---------- 6b. Twins and multiple births by age ----------
+function drawMult(s) {
+  const el = $('#c-mult');
+  if (!s.n) return emptyState(el, 'No births in this selection.');
+  const groups = DATA.meta.ageGroups, b = s.byAge;
+  $('#mult-sub').textContent = `Percent of babies born in a delivery of two or more. ${pct(s.mult / s.n)} overall (${fmt(s.mult)} babies); each twin counts as a birth.`;
+  const d = groups.map((grp, i) => ({ grp, n: b.n[i], m: b.mult[i], v: b.n[i] ? b.mult[i] / b.n[i] : NaN }));
+  const { svg, g, w, h } = frame(el, 262, { t: 20, r: 8, b: 40, l: 44 });
+  svg.attr('aria-label', 'Share of babies from multiple births by mother age group');
+  const x = d3.scaleBand(groups, [0, w]).padding(0.3);
+  const y = d3.scaleLinear([0, (d3.max(d, (p) => p.n >= MIN_N ? p.v : 0) || 0.05) * 1.18], [h, 0]).nice();
+  yGrid(g, y, w, 4, d3.format('.0%'));
+  g.append('g').attr('class', 'axis').attr('transform', `translate(0,${h})`).call(d3.axisBottom(x).tickSize(0).tickPadding(8)).select('.domain').attr('stroke', css('--axis'));
+  g.append('text').attr('class', 'lbl').attr('x', w / 2).attr('y', h + 34).attr('text-anchor', 'middle').text("Mother's age");
+  const shown = d.filter((p) => Number.isFinite(p.v));
+  g.selectAll(null).data(shown).join('path').attr('fill', css('--s1')).attr('opacity', (p) => p.n < MIN_N ? 0.4 : 1)
+    .attr('d', (p) => colPath(x(p.grp), Math.max(0, y(p.v)), x.bandwidth(), h - Math.max(0, y(p.v))))
+    .on('mousemove', (ev, p) => showTip(ev, `<div class="t">Mother aged ${p.grp}</div>${row('Multiple births', pct(p.v))}${row('Babies', fmt(p.m))}${row('All births in group', fmt(p.n))}${p.n < MIN_N ? '<div>Few births: read with care</div>' : ''}`))
+    .on('mouseleave', hideTip);
+  g.selectAll(null).data(shown).join('text').attr('class', 'lbl-strong').attr('x', (p) => x(p.grp) + x.bandwidth() / 2).attr('y', (p) => Math.max(10, y(p.v) - 6))
+    .attr('text-anchor', 'middle').text((p) => pct(p.v));
+}
+
+// ---------- 6c. Complications by age and mother's origin ----------
+function drawCmp(s) {
+  const el = $('#c-cmp');
+  const nat = byNat();
+  if (!s.n) { $('#cmp-legend').innerHTML = ''; return emptyState(el, 'No births in this selection.'); }
+  const groups = DATA.meta.ageGroups;
+  $('#cmp-sub').textContent = `Percent of births recorded as a delivery with complications: ${pct(s.cmp / s.n)} in this selection. One line per mother's ${nat ? 'nationality' : 'country of birth'}; ages with fewer than ${MIN_N} births are left out.`;
+  const lines = CONTS.map((k) => {
+    const c = s.cmpC[k];
+    const all = groups.map((grp, i) => ({ grp, n: c.n[i], v: c.cmp[i] / c.n[i], ok: c.n[i] >= MIN_N }));
+    return { k, name: contName(k), color: css(CONT_COLOR[k]), all, pts: all.filter((p) => p.ok), c };
+  }).filter((l) => l.pts.length);
+  $('#cmp-legend').innerHTML = lines.map((l) => `<span><i class="line" style="background:${l.color}"></i>${l.name}</span>`).join('');
+  if (!lines.length) return emptyState(el, `Too few births in this selection (under ${MIN_N} in every group).`);
+  const { svg, g, w, h } = frame(el, 262, { t: 12, r: 12, b: 40, l: 40 });
+  svg.attr('aria-label', "Complication rate by mother's age group and origin");
+  const x = d3.scalePoint(groups, [0, w]).padding(0.4);
+  const y = d3.scaleLinear([0, d3.max(lines.flatMap((l) => l.pts.map((p) => p.v))) * 1.12], [h, 0]).nice();
+  yGrid(g, y, w, 5, d3.format('.0%'));
+  g.append('g').attr('class', 'axis').attr('transform', `translate(0,${h})`).call(d3.axisBottom(x).tickSize(0).tickPadding(8)).select('.domain').attr('stroke', css('--axis'));
+  g.append('text').attr('class', 'lbl').attr('x', w / 2).attr('y', h + 34).attr('text-anchor', 'middle').text("Mother's age");
+  lines.forEach((l) => {
+    g.append('path').datum(l.all).attr('fill', 'none').attr('stroke', l.color).attr('stroke-width', 2)
+      .attr('d', d3.line().defined((p) => p.ok).x((p) => x(p.grp)).y((p) => y(p.v)));
+    g.selectAll(null).data(l.pts).join('circle').attr('cx', (p) => x(p.grp)).attr('cy', (p) => y(p.v)).attr('r', 3.5)
+      .attr('fill', l.color).attr('stroke', css('--surface')).attr('stroke-width', 1.5);
+  });
+  const step = x.step();
+  groups.forEach((grp, i) => {
+    g.append('rect').attr('x', x(grp) - step / 2).attr('width', step).attr('height', h).attr('fill', 'transparent')
+      .on('mousemove', (ev) => showTip(ev, `<div class="t">Mother aged ${grp}</div>` + lines.map((l) => {
+        const n = l.c.n[i];
+        return row(l.name, n >= MIN_N ? `${pct(l.c.cmp[i] / n)} <span style="color:var(--muted);font-weight:400">of ${fmt(n)}</span>` : n ? `${fmt(n)} births` : '–', l.color);
+      }).join('')))
+      .on('mouseleave', hideTip);
+  });
+}
+
+// ---------- 6d. Boys per 100 girls ----------
+function drawSex(s) {
+  const el = $('#c-sex');
+  if (!s.n) return emptyState(el, 'No births in this selection.');
+  const S = s.sex, nat = byNat();
+  const mk = (k, name, [b, gl], extra = {}) => {
+    const n = b + gl;
+    if (n < MIN_N || !gl) return null;
+    const p = b / n, se = Math.sqrt(p * (1 - p) / n), r = (q) => 100 * q / (1 - q);
+    return { k, name, b, g: gl, n, v: r(p), lo: r(p - 1.96 * se), hi: r(p + 1.96 * se), ...extra };
+  };
+  const sections = [
+    [null, [mk('all', 'All births', S.all, { strong: true })]],
+    ['By birth order', ['1st child', '2nd child', '3rd child', '4th or later'].map((name, i) => mk('o' + i, name, S.order[i]))],
+    [`By mother's ${nat ? 'nationality' : 'country of birth'}`, CONTS.map((k) => mk('c' + k, contName(k), S.cont[k]))],
+  ].map(([title, rows]) => [title, rows.filter(Boolean)]).filter(([, rows]) => rows.length);
+  const rowH = 28, headH = 24;
+  let yy = 0;
+  const items = [];
+  sections.forEach(([title, rows]) => {
+    if (title) { items.push({ title, y: yy + 16 }); yy += headH; }
+    rows.forEach((r) => { items.push({ ...r, y: yy }); yy += rowH; });
+  });
+  const data = items.filter((it) => !it.title);
+  const { svg, g, w } = frame(el, yy + 34, { t: 4, r: 40, b: 30, l: 112 });
+  svg.attr('aria-label', 'Boys born per 100 girls, overall, by birth order and by mother origin');
+  const x = d3.scaleLinear([Math.min(98, d3.min(data, (d) => d.lo)), Math.max(114, d3.max(data, (d) => d.hi))], [0, w]).nice();
+  g.append('g').attr('class', 'gridlines').attr('transform', `translate(0,${yy})`).call(d3.axisBottom(x).ticks(5).tickSize(-yy).tickFormat(''));
+  g.append('g').attr('class', 'axis').attr('transform', `translate(0,${yy})`).call(d3.axisBottom(x).ticks(5).tickSize(0).tickPadding(8)).select('.domain').remove();
+  g.append('line').attr('class', 'ref-line').attr('x1', x(105)).attr('x2', x(105)).attr('y1', 0).attr('y2', yy);
+  items.forEach((it) => {
+    if (it.title) { g.append('text').attr('class', 'lbl').attr('x', -112).attr('y', it.y).style('fill', 'var(--muted)').text(it.title); return; }
+    const cy = it.y + rowH / 2;
+    g.append('text').attr('class', it.strong ? 'lbl-strong' : 'lbl').attr('x', -112).attr('y', cy).attr('dy', '0.35em').text(it.name);
+    g.append('line').attr('x1', x(it.lo)).attr('x2', x(it.hi)).attr('y1', cy).attr('y2', cy).attr('stroke', css('--fg-2')).attr('stroke-width', 1.5);
+    g.append('circle').attr('cx', x(it.v)).attr('cy', cy).attr('r', 5).attr('fill', css(it.strong ? '--ord3' : '--s1')).attr('stroke', css('--surface')).attr('stroke-width', 1.5);
+    g.append('text').attr('class', 'lbl-strong').attr('x', w + 6).attr('y', cy).attr('dy', '0.35em').text(it.v.toFixed(1));
+    g.append('rect').attr('x', -112).attr('y', it.y).attr('width', w + 152).attr('height', rowH).attr('fill', 'transparent')
+      .on('mousemove', (ev) => showTip(ev, `<div class="t">${it.name}</div>${row('Boys per 100 girls', it.v.toFixed(1))}${row('95% range', `${it.lo.toFixed(1)}–${it.hi.toFixed(1)}`)}${row('Boys', fmt(it.b))}${row('Girls', fmt(it.g))}`))
+      .on('mouseleave', hideTip);
+  });
+}
+
+// ---------- 6e. Wedding to first birth ----------
+function drawWed(s) {
+  const el = $('#c-wed');
+  const max = DATA.meta.wedMax, tot = d3.sum(s.wed);
+  if (!tot) { $('#wed-sub').textContent = "Married mothers' first births, months since the wedding"; return emptyState(el, 'No first births to married mothers with a wedding date in this selection.'); }
+  const early = d3.sum(s.wed.slice(0, 8)), over = s.wed[max + 1];
+  $('#wed-sub').textContent = `${fmt(tot)} first births to married mothers, by months between the wedding month and the birth month.${s.wedNo ? ` Wedding date missing for ${fmt(s.wedNo)} more.` : ''}`;
+  const d = d3.range(max + 1).map((m) => ({ m, c: s.wed[m] }));
+  const { svg, g, w, h } = frame(el, 280, { t: 26, r: 8, b: 40, l: 44 });
+  svg.attr('aria-label', 'First births to married mothers by months since the wedding');
+  const x = d3.scaleBand(d.map((p) => p.m), [0, w]).padding(0.15);
+  const y = d3.scaleLinear([0, d3.max(d, (p) => p.c) * 1.15], [h, 0]).nice();
+  yGrid(g, y, w, 4, d3.format('~s'));
+  g.append('g').attr('class', 'axis').attr('transform', `translate(0,${h})`)
+    .call(d3.axisBottom(x).tickValues(d3.range(0, max + 1, 12)).tickFormat((m) => m ? `${m / 12} y` : '0').tickSize(0).tickPadding(8))
+    .select('.domain').attr('stroke', css('--axis'));
+  g.append('text').attr('class', 'lbl').attr('x', w / 2).attr('y', h + 34).attr('text-anchor', 'middle').text('Time since the wedding');
+  g.selectAll(null).data(d).join('path').attr('fill', (p) => css(p.m < 8 ? '--s2' : '--s1'))
+    .attr('d', (p) => colPath(x(p.m), y(p.c), x.bandwidth(), h - y(p.c), 2))
+    .on('mousemove', (ev, p) => showTip(ev, `<div class="t">${p.m === 0 ? 'Same month as the wedding' : `${p.m} month${p.m > 1 ? 's' : ''} after the wedding`}</div>${row('First births', fmt(p.c))}${row('Share', pct(p.c / tot))}`))
+    .on('mouseleave', hideTip);
+  g.append('text').attr('class', 'lbl-strong halo').attr('x', 0).attr('y', -10).text(`${pct(early)} under 8 months`);
+  g.append('text').attr('class', 'lbl halo').attr('x', w).attr('y', -10).attr('text-anchor', 'end').text(`${pct(over / tot)} after more than ${max / 12} years (not shown)`);
+}
+
+// ---------- 6f. Mothers born abroad with Spanish nationality ----------
+function drawNat(s) {
+  const el = $('#c-nat');
+  if (!DATA.meta.avail.natEs) {
+    $('#nat-sub').textContent = 'Share of mothers born abroad who hold Spanish nationality, by country of birth';
+    return emptyState(el, `The ${state.year} file records the mother's nationality but not her country of birth,<br>so mothers born abroad who became Spanish can't be told apart. Choose 2015 or 2025.`);
+  }
+  if (state.origin === 'es') return emptyState(el, 'All mothers in this selection were born in Spain.<br>Choose "All" or "Abroad".');
+  const totAb = d3.sum(Object.values(s.countries)) + s.countriesOther, N = s.natEs;
+  if (!totAb) return emptyState(el, 'No mothers born abroad in this selection.');
+  const unk = N.n - N.later - N.birth;
+  $('#nat-sub').textContent = `${pct(N.n / totAb)} of mothers born abroad (${fmt(N.n)} of ${fmt(totAb)}) hold Spanish nationality. Of these, ${fmt(N.later)} acquired it after birth, ${fmt(N.birth)} had it from birth, and for ${fmt(unk)} the file doesn't say.`;
+  const d = [{ k: 'all', name: 'All born abroad', v: N.n, n: totAb, strong: true },
+    ...Object.entries(s.countries).map(([k, n]) => ({ k, name: DATA.meta.countries[k] || k, v: s.countriesEs[k] || 0, n }))
+      .sort((a, b) => b.v / b.n - a.v / a.n)].map((p) => ({ ...p, p: p.v / p.n }));
+  const rowH = 24, narrow = el.clientWidth < 520;
+  const { svg, g, w } = frame(el, d.length * rowH + 8, { t: 4, r: narrow ? 44 : 120, b: 4, l: narrow ? 130 : 160 });
+  svg.attr('aria-label', 'Share of mothers born abroad with Spanish nationality, by country of birth');
+  const y = d3.scaleBand(d.map((p) => p.k), [0, d.length * rowH]).padding(0.25);
+  const x = d3.scaleLinear([0, 1], [0, w]);
+  g.selectAll(null).data(d).join('text').attr('class', (p) => p.strong ? 'lbl-strong' : 'lbl').attr('x', -8).attr('y', (p) => y(p.k) + y.bandwidth() / 2).attr('dy', '0.35em').attr('text-anchor', 'end').text((p) => p.name);
+  g.selectAll(null).data(d).join('rect').attr('y', (p) => y(p.k)).attr('height', y.bandwidth()).attr('width', w).attr('rx', 4).attr('fill', css('--grid'));
+  g.selectAll(null).data(d).join('path').attr('fill', (p) => css(p.strong ? '--ord3' : '--s1')).attr('opacity', (p) => p.n < MIN_N ? 0.4 : 1)
+    .attr('d', (p) => barPath(0, y(p.k), x(p.p), y.bandwidth()))
+    .on('mousemove', (ev, p) => showTip(ev, `<div class="t">Mothers born in ${p.k === 'all' ? 'any other country' : p.name}</div>${row('Spanish nationality', pct(p.p))}${row('Mothers', fmt(p.v))}${row('Out of', fmt(p.n))}${p.n < MIN_N ? '<div>Few births: read with care</div>' : ''}`))
+    .on('mouseleave', hideTip);
+  g.selectAll(null).data(d).join('text').attr('class', 'lbl').attr('x', w + 8).attr('y', (p) => y(p.k) + y.bandwidth() / 2).attr('dy', '0.35em')
+    .text((p) => narrow ? pct(p.p, 0) : `${pct(p.p, 0)} · ${fmt(p.v)}`);
+}
+
 // ---------- 7. Provinces ----------
 const METRICS = {
   n: { label: 'Births', f: (o, p) => sl(o, p).n, show: (v) => fmt(v), axis: d3.format('~s') },
@@ -895,7 +1105,7 @@ function drawMarital(s) {
   if (!s.n) return emptyState(el, 'No births in this selection.');
   const d = s.marital.map((v, i) => ({ name: (DATA.meta.marital || MARITAL)[i], v, p: v / s.n }));
   const rowH = 34;
-  const { svg, g, w, h } = frame(el, d.length * rowH + 64, { t: 4, r: 64, b: 60, l: 150 });
+  const { svg, g, w } = frame(el, d.length * rowH + 8, { t: 4, r: 64, b: 4, l: 150 });
   svg.attr('aria-label', 'Mother marital status');
   const y = d3.scaleBand(d.map((p) => p.name), [0, d.length * rowH]).padding(0.3);
   const x = d3.scaleLinear([0, 1], [0, w]);
@@ -905,10 +1115,6 @@ function drawMarital(s) {
     .on('mousemove', (ev, p) => showTip(ev, `<div class="t">${p.name}</div>${row('Births', fmt(p.v))}${row('Share', pct(p.p))}`))
     .on('mouseleave', hideTip);
   g.selectAll(null).data(d).join('text').attr('class', 'lbl-strong').attr('x', w + 8).attr('y', (p) => y(p.name) + y.bandwidth() / 2).attr('dy', '0.35em').text((p) => pct(p.p));
-  const base = d.length * rowH + 22;
-  g.append('text').attr('class', 'lbl').attr('x', -150).attr('y', base).text('Twins and other multiple births');
-  g.append('text').attr('class', 'lbl-strong').attr('x', w + 8).attr('y', base).text(pct(s.mult / s.n));
-  g.append('text').attr('class', 'lbl').attr('x', -150).attr('y', base + 20).text(`${fmt(s.mult)} babies born in deliveries of two or more`);
 }
 
 // ---------- 10. Parents from different countries ----------
@@ -1000,7 +1206,7 @@ function renderAll() {
   yearLabels();
   $('#status').textContent = `${state.year} · ${fmt(s.n)} births · ${provName(state.prov)} · ${originTxt(state.origin)}`;
   renderKpis(s);
-  drawTfr(); drawAge(s); drawOrder(s); drawRates(s); drawMonth(s); drawHeat(s); drawInterval(s); drawProvinces(); drawCountries(s); drawMarital(s); drawMixed(s); drawParentCountries(s, 'esM'); drawParentCountries(s, 'esP');
+  drawTfr(); drawAge(s); drawOrder(s); drawRates(s); drawMonth(s); drawMult(s); drawCmp(s); drawHeat(s); drawInterval(s); drawSex(s); drawWed(s); drawProvinces(); drawCountries(s); drawMarital(s); drawNat(s); drawMixed(s); drawParentCountries(s, 'esM'); drawParentCountries(s, 'esP');
   mapVars();
 }
 function update() { syncControls(); saveState(); renderAll(); }

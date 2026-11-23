@@ -9,7 +9,11 @@ Interactive dashboard of every live birth registered in Spain in 2006, 2015 and 
 - Children per woman (total fertility rate) by mother's country of birth and continent
 - Age of mother and father, also by continent of birth
 - Birth order, caesarean, preterm and low birth weight by mother's age
+- Twins and multiple births by mother's age; complications by mother's age and origin
 - Births per day by month; gestation × birth weight
+- Boys per 100 girls, by birth order and mother's origin
+- Time between the wedding and a married mother's first birth
+- Mothers born abroad who hold Spanish nationality, by country of birth (2015, 2025)
 - Interactive province map (births, mother's age, caesarean, preterm, mother born abroad, both parents born abroad, mixed couples)
 - Mothers' countries of birth, marital status, and couples where the parents come from different countries
 
