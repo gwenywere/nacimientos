@@ -79,6 +79,12 @@ LAYOUT_1996 = {'ANOPAR': (8, 4), 'MESPAR': (6, 2), 'PROREM': (30, 2), 'MULTIPLI'
                'SEMANAS': (12, 2), 'EDADM': (58, 2), 'EDADP': (67, 2), 'CAS': (40, 1), 'PAISNACM': (80, 3),
                'PAISNACP': (83, 3), 'PESON': (72, 4), 'INIHA': (64, 3), 'SORDENV': (32, 2),
                'SEXO': (69, 1), 'NORMA': (18, 1), 'MESMAT': (42, 2), 'ANIOMAT': (44, 4)}
+# INE anonymised file 1980-1995 (68-char records; the design document ships with the late fetal deaths file,
+# whose layout the births file shares). No nationality or country of birth for either parent; years have 2 digits.
+LAYOUT_1980 = {'SEMANAS': (8, 2), 'MESPAR': (10, 2), 'ANOPAR': (12, 2), 'MULTIPLI': (14, 1), 'INTERSEM': (15, 1),
+               'NORMA': (16, 1), 'PROREM': (26, 2), 'SORDENV': (28, 2), 'MESHAN': (30, 2), 'ANOHAN': (32, 2),
+               'CAS': (34, 1), 'MESMAT': (36, 2), 'ANIOMAT': (38, 2), 'SEXO': (47, 1), 'PESON': (49, 4),
+               'EDADM': (59, 2), 'EDADP': (67, 2)}
 MARITAL_2016 = ['Married', 'Single', 'Separated or divorced', 'Widowed']
 MARITAL_1996 = ['Married', 'Not married']
 
@@ -87,7 +93,30 @@ def read_rows(src, dr):
     """Return (rows, layout_name). Detects the layout from the record length."""
     with open(src, encoding='latin-1') as fh:
         lines = [ln.rstrip('\r\n') for ln in fh if ln.strip()]
-    if max(len(ln) for ln in lines[:1000]) <= 90:
+    width = max(len(ln) for ln in lines[:1000])
+    if width <= 70:
+        rows = []
+        for ln in lines:
+            r = {k: ln[p - 1:p - 1 + n].strip() for k, (p, n) in LAYOUT_1980.items()}
+            r['ANOPAR'] = '19' + r['ANOPAR']
+            r['ANIOMAT'] = '19' + r['ANIOMAT'] if r['ANIOMAT'] not in ('', '00') else ''
+            r['SEMANAS'] = '' if r['SEMANAS'] in ('', '00') else r['SEMANAS']
+            r['EDADP'] = '' if r['EDADP'] in ('', '00', '99') else r['EDADP']
+            r['PESON'] = '' if r['PESON'] in ('', '0', '0000') else r['PESON']
+            # months since the previous live-born child, from its birth month/year (the file's own
+            # interval field is in whole years and counts from the wedding)
+            mh, ah = r.pop('MESHAN'), r.pop('ANOHAN')
+            r['INIHA'] = ''
+            if mh.isdigit() and ah.isdigit() and 1 <= int(mh) <= 12 and ah != '00':
+                d = (int(r['ANOPAR']) * 12 + int(r['MESPAR'])) - ((1900 + int(ah)) * 12 + int(mh))
+                r['INIHA'] = str(d) if d > 0 else ''
+            r['ECIVM'] = r.pop('CAS')  # 1 married, 2 not married
+            r['CESAREA'] = None
+            for k in ('PAISNXM', 'PAISNXP', 'PAISNACM', 'PAISNACP', 'NACIOEM', 'CUANNACM'):
+                r[k] = None
+            rows.append(r)
+        return rows, '1980'
+    if width <= 90:
         rows = []
         for ln in lines:
             r = {k: ln[p - 1:p - 1 + n].strip() for k, (p, n) in LAYOUT_1996.items()}
@@ -121,7 +150,8 @@ def main():
     mAge, pAge = [min(m_ages), max(m_ages)], [min(p_ages), max(p_ages)]
     provinces = {k: v for k, v in dr['codelists']['TPROV'].items() if k.isdigit() and 1 <= int(k) <= 52}
 
-    old = fmt == '1996'
+    old = fmt in ('1996', '1980')
+    has_origin = fmt != '1980'  # the 1980-95 layout records neither nationality nor country of birth
     ORIG = 'PAISNACM' if old else 'PAISNXM'  # 1996 layout has nationality only
     ORIG_P = 'PAISNACP' if old else 'PAISNXP'
     marital_labels = MARITAL_1996 if old else MARITAL_2016
@@ -137,8 +167,8 @@ def main():
         prov = r['PROREM']
         if prov not in provinces:
             missing['residesAbroad'] += 1
-        origin = 'es' if r[ORIG] == SPAIN else 'ab'
-        targets = [slices[f'{o}|{p}'] for o in ('all', origin) for p in (['ES', prov] if prov in provinces else ['ES'])]
+        origins = ['all', 'es' if r[ORIG] == SPAIN else 'ab'] if has_origin else ['all']
+        targets = [slices[f'{o}|{p}'] for o in origins for p in (['ES', prov] if prov in provinces else ['ES'])]
 
         am = int(r['EDADM'])
         ag = age_group(am)
@@ -231,12 +261,12 @@ def main():
                             g['esP'][m] += 1
                         else:
                             g['dir'][2] += 1
-            if r[ORIG] != SPAIN:  # blank (not recorded) ends up in countriesOther
+            if has_origin and r[ORIG] != SPAIN:  # blank (not recorded) ends up in countriesOther
                 s['countries'][r[ORIG] or '_unknown'] += 1
 
     used = set()
     out_slices = {}
-    for o in ('all', 'es', 'ab'):
+    for o in ('all', 'es', 'ab') if has_origin else ('all',):
         for p in ['ES'] + sorted(provinces):
             s = slices[f'{o}|{p}']
             unknown = s['countries'].pop('_unknown', 0)
@@ -257,7 +287,7 @@ def main():
         'countries': {**{'155': 'Serbia y Montenegro'}, **dr['codelists']['TPAIS']},  # 155: pre-2006 code
         'ageGroups': AGE_GROUPS, 'mAge': mAge, 'pAge': pAge, 'weeks': list(WEEKS), 'wEdges': W_EDGES,
         'intBin': INT_BIN, 'intMax': INT_MAX, 'wedMax': WED_MAX, 'layout': fmt, 'marital': marital_labels,
-        'avail': {'ces': not old, 'birthCountry': not old, 'natEs': not old}, 'missing': {k: missing[k] for k in ('weeks', 'weight', 'fatherAge', 'residesAbroad')},
+        'avail': {'ces': not old, 'birthCountry': not old, 'natEs': not old, 'origin': has_origin}, 'missing': {k: missing[k] for k in ('weeks', 'weight', 'fatherAge', 'residesAbroad')},
     }
     with open(a.out, 'w', encoding='utf-8') as f:
         json.dump({'meta': meta, 'slices': out_slices}, f, ensure_ascii=False, separators=(',', ':'))

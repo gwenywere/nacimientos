@@ -9,8 +9,11 @@ TFR = sum over ages 15..49 of births(age) / women(age). Births to mothers under 
 count at 15 and over 49 at 49. "Rest of Europe" = all foreign-born (or foreign) women
 minus Africa, the Americas, Asia and Oceania, because the EU/non-EU split only starts in 2012.
 
+1995 has no mother's origin, so it gets "All women" only, from table 56934 (women by single age since 1971).
+Years already in out.json and not named on the command line are kept as they are.
+
 Usage:
-    python build_tfr.py out.json 2025=data.json 2015=data-2015.json 2006=data-2006.json
+    python build_tfr.py out.json 2025=data.json 2015=data-2015.json 2006=data-2006.json 1995=data-1995.json
 """
 import json
 import re
@@ -24,9 +27,23 @@ TOTAL = '16420'
 SPAIN_BP, SPAIN_NAT, FOREIGN = '274511', '21386', '274512'
 AFRICA, N_AMERICA, C_AMERICA, S_AMERICA, ASIA, OCEANIA = '9947', '292919', '292918', '16435', '9966', '16438'
 # population date per year: mid-year where available; 2025 only has 1 January
-POP_DATE = {'2006': '2006-07-01', '2015': '2015-07-01', '2025': '2025-01-01'}
-# the 2006 births file has nationality only, so 2006 uses women by nationality
-BASIS = {'2006': 'nationality'}
+POP_DATE = {'1995': '1995-07-01', '2006': '2006-07-01', '2015': '2015-07-01', '2025': '2025-01-01'}
+# the 2006 births file has nationality only, so 2006 uses women by nationality;
+# the 1995 file has no origin at all, and table 56939 starts in 2002, so 1995 uses all women from table 56934
+BASIS = {'2006': 'nationality', '1995': 'total'}
+API_LONG = 'https://servicios.ine.es/wstempus/js/ES/DATOS_TABLA/56934?date={date}'  # women by single age, from 1971
+
+
+def fetch_total(date):
+    """Women by single year of age on `date` (YYYY-MM-DD), all of Spain, from table 56934."""
+    req = urllib.request.Request(API_LONG.format(date=date.replace('-', '')), headers={'User-Agent': 'Mozilla/5.0 (data-client)'})
+    data = json.loads(urllib.request.urlopen(req, timeout=180).read().decode('utf-8'))
+    out = {}
+    for s in data:
+        m = re.match(r'Total Nacional\. (\d+) años?\. Mujeres\.', s['Nombre'])
+        if m and s['Data']:
+            out[int(m.group(1))] = s['Data'][0]['Valor']
+    return out
 
 
 def fetch(code, by_nat):
@@ -46,10 +63,25 @@ def main():
     out_path, pairs = sys.argv[1], [a.split('=', 1) for a in sys.argv[2:]]
     cache = {}
     get = lambda code, by_nat: cache.setdefault((code, by_nat), fetch(code, by_nat))
-    result = {}
+    try:  # keep years already in the output that aren't rebuilt this time
+        result = json.load(open(out_path, encoding='utf-8'))
+    except (OSError, ValueError):
+        result = {}
     for year, path in pairs:
         by_nat = BASIS.get(year) == 'nationality'
         date = POP_DATE[year]
+        if BASIS.get(year) == 'total':
+            d = json.load(open(path, encoding='utf-8'))
+            m0, pop = d['meta']['mAge'][0], fetch_total(date)
+            b = [0] * 35
+            for i, c in enumerate(d['slices']['all|ES']['ageM']):
+                b[min(max(i + m0, 15), 49) - 15] += c
+            rates = [b[a - 15] / pop[a] if pop.get(a) else 0 for a in range(15, 50)]
+            result[year] = {'popDate': date, 'basis': 'total', 'groups': {'all': {
+                'tfr': round(sum(rates), 3), 'births': sum(b), 'women': round(sum(pop.get(a, 0) for a in range(15, 50))),
+                'meanAge': round(sum((a + 0.5) * r for a, r in zip(range(15, 50), rates)) / sum(rates), 1)}}}
+            print(year, {'all': result[year]['groups']['all']['tfr']})
+            continue
         P = lambda code: {a: v.get(date, 0) for a, v in get(code, by_nat).items()}
         plus = lambda *xs: {a: sum(x[a] for x in xs) for a in xs[0]}
         foreign, africa, americas, asia, oceania = P(FOREIGN), P(AFRICA), plus(P(N_AMERICA), P(C_AMERICA), P(S_AMERICA)), P(ASIA), P(OCEANIA)

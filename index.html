@@ -1,4 +1,4 @@
-<!doctype html><html lang="en"><head><meta charset=utf8><title>Nacimientos 2006–2025</title><meta name="description" content="Live births in Spain in 2006, 2015 and 2025 from INE microdata."><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<!doctype html><html lang="en"><head><meta charset=utf8><title>Nacimientos 1995–2025</title><meta name="description" content="Live births in Spain in 1995, 2006, 2015 and 2025 from INE microdata."><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@500;600&display=swap">
 <style>
@@ -190,6 +190,7 @@ footer a { color: var(--accent); text-underline-offset: 2px; }
         <button type="button" role="tab" data-v="2025" aria-selected="true">2025</button>
         <button type="button" role="tab" data-v="2015" aria-selected="false">2015</button>
         <button type="button" role="tab" data-v="2006" aria-selected="false">2006</button>
+        <button type="button" role="tab" data-v="1995" aria-selected="false">1995</button>
       </div>
     </div>
     <div class="field" role="group" aria-labelledby="lbl-origin">
@@ -421,17 +422,24 @@ const ORIGIN_TXT = { all: 'all mothers', es: 'mothers born in Spain', ab: 'mothe
 const MARITAL = ['Married', 'Single', 'Separated or divorced', 'Widowed'];
 // The 2006 file (INE 1996 layout) has nationality but no country of birth, and no caesarean flag.
 const ORIGIN_NAT = { all: 'all mothers', es: 'Spanish mothers', ab: 'foreign mothers' };
-const byNat = () => !!(DATA && DATA.meta.avail && !DATA.meta.avail.birthCountry);
+// The 1995 file (INE 1980–95 layout) records neither nationality nor country of birth.
+const hasOrigin = () => !(DATA && DATA.meta.avail && DATA.meta.avail.origin === false);
+const byNat = () => !!(DATA && DATA.meta.avail && !DATA.meta.avail.birthCountry) && hasOrigin();
+const NO_ORIGIN = () => `The ${state.year} file records neither the parents' country of birth nor their nationality.`;
+const abShare = (p) => hasOrigin() ? sl('ab', p).n / sl('all', p).n : NaN;
 const hasCes = () => !(DATA && DATA.meta.avail && !DATA.meta.avail.ces);
 const originTxt = (o) => (byNat() ? ORIGIN_NAT : ORIGIN_TXT)[o];
 const OLD_VARS = [[/CESAREA · /g, ''], [/SORDENV/g, 'NUMHV'], [/INTERSEM/g, 'MATURI'], [/SEMANAS/g, 'SEMGES'], [/INIHA/g, 'ININHA'],
   [/PROREM/g, 'PROM'], [/PAISNXM/g, 'NACMAD'], [/PAISNACM/g, 'NACMAD'], [/PAISNACP/g, 'NACPAD'], [/ECIVM/g, 'CAS'], [/MULTIPLI/g, 'MULTI'],
   [/NORMA\b/g, 'NORMAL'], [/ANIOMAT/g, 'ANOMAT']];
+// 1980–95 layout: same names as 1996, but months since the previous child come from its birth date
+const VARS_1980 = [[/ININHA/g, 'MESHAN · ANOHAN'], [/ · NACMAD/g, '']];
 function mapVars() {
-  const old = DATA.meta.layout === '1996';
+  const lay = DATA.meta.layout, old = lay === '1996' || lay === '1980';
   document.querySelectorAll('.vars').forEach((el) => {
     if (!el.id) { if (el.dataset.orig == null) el.dataset.orig = el.textContent; el.textContent = el.dataset.orig; }
     if (old) el.textContent = OLD_VARS.reduce((t, [re, v]) => t.replace(re, v), el.textContent);
+    if (lay === '1980') el.textContent = VARS_1980.reduce((t, [re, v]) => t.replace(re, v), el.textContent);
   });
 }
 function yearLabels() {
@@ -449,7 +457,9 @@ function yearLabels() {
   $('#cty-title').textContent = nat ? "Mother's nationality" : "Mother's country of birth";
   $('#cty-vars').textContent = nat ? 'PAISNACM' : 'PAISNXM'; // mapVars() renames to the 1996 layout's NACMAD
   $('#cty-sub').textContent = nat ?'Top 15 nationalities among foreign mothers' : 'Top 15 countries among mothers born abroad';
-  $('#foot-origin').textContent = nat
+  $('#foot-origin').textContent = !hasOrigin()
+    ? `${NO_ORIGIN()} The origin filter and the charts about parents' origin don't apply to ${state.year}. Caesarean sections were not recorded, marital status is only married / not married, and months since the previous child are worked out from that child's month and year of birth.`
+    : nat
     ? `The ${state.year} file records nationality but not country of birth, so for ${state.year} "Spanish" and "Foreign" use the mother's nationality. Caesarean sections were not recorded, and marital status is only married / not married.`
     : '"Born abroad" uses the mother\'s country of birth, not her nationality.';
 }
@@ -460,6 +470,7 @@ const YEARS = {
   2025: { file: 'data.json', src: 'MNPnacim_2025', note: '' },
   2015: { file: 'data-2015.json', src: 'Anonimizado Nacimientos sin causa.A2015', note: ', read with the 2016+ record layout' },
   2006: { file: 'data-2006.json', src: 'NACIMIENTOS 2006', note: ', INE anonymised births layout used from 1996 (85-character records)' },
+  1995: { file: 'data-1995.json', src: 'NACIA95', note: ', INE anonymised layout for 1980–1995 (68-character records)' },
 };
 const CACHE = {};
 const UNION = { all: 'all couples', mar: 'married mothers', unm: 'unmarried mothers' };
@@ -796,11 +807,12 @@ function drawCmp(s) {
   const nat = byNat();
   if (!s.n) { $('#cmp-legend').innerHTML = ''; return emptyState(el, 'No births in this selection.'); }
   const groups = DATA.meta.ageGroups;
-  $('#cmp-sub').textContent = `Percent of births recorded as a delivery with complications: ${pct(s.cmp / s.n)} in this selection. One line per mother's ${nat ? 'nationality' : 'country of birth'}; ages with fewer than ${MIN_N} births are left out.`;
-  const lines = CONTS.map((k) => {
-    const c = s.cmpC[k];
+  const orig = hasOrigin();
+  $('#cmp-sub').textContent = `Percent of births recorded as a delivery with complications: ${pct(s.cmp / s.n)} in this selection. ${orig ? `One line per mother's ${nat ? 'nationality' : 'country of birth'}` : `The ${state.year} file doesn't record the mother's origin, so one line for all mothers`}; ages with fewer than ${MIN_N} births are left out.`;
+  const src = orig ? CONTS.map((k) => [k, contName(k), CONT_COLOR[k], s.cmpC[k]]) : [['all', 'All mothers', '--ord3', { n: s.byAge.n, cmp: s.byAge.cmp }]];
+  const lines = src.map(([k, name, colorVar, c]) => {
     const all = groups.map((grp, i) => ({ grp, n: c.n[i], v: c.cmp[i] / c.n[i], ok: c.n[i] >= MIN_N }));
-    return { k, name: contName(k), color: css(CONT_COLOR[k]), all, pts: all.filter((p) => p.ok), c };
+    return { k, name, color: css(colorVar), all, pts: all.filter((p) => p.ok), c };
   }).filter((l) => l.pts.length);
   $('#cmp-legend').innerHTML = lines.map((l) => `<span><i class="line" style="background:${l.color}"></i>${l.name}</span>`).join('');
   if (!lines.length) return emptyState(el, `Too few births in this selection (under ${MIN_N} in every group).`);
@@ -901,7 +913,9 @@ function drawNat(s) {
   const el = $('#c-nat');
   if (!DATA.meta.avail.natEs) {
     $('#nat-sub').textContent = 'Share of mothers born abroad who hold Spanish nationality, by country of birth';
-    return emptyState(el, `The ${state.year} file records the mother's nationality but not her country of birth,<br>so mothers born abroad who became Spanish can't be told apart. Choose 2015 or 2025.`);
+    return emptyState(el, hasOrigin()
+      ? `The ${state.year} file records the mother's nationality but not her country of birth,<br>so mothers born abroad who became Spanish can't be told apart. Choose 2015 or 2025.`
+      : `${NO_ORIGIN()}<br>Choose 2015 or 2025.`);
   }
   if (state.origin === 'es') return emptyState(el, 'All mothers in this selection were born in Spain.<br>Choose "All" or "Abroad".');
   const totAb = d3.sum(Object.values(s.countries)) + s.countriesOther, N = s.natEs;
@@ -932,7 +946,7 @@ const METRICS = {
   age: { label: "Mother's mean age", f: (o, p) => meanAge(sl(o, p)), show: (v) => v.toFixed(1), axis: (v) => v },
   ces: { label: 'Caesarean', f: (o, p) => sl(o, p).ces / sl(o, p).n, show: (v) => pct(v), axis: d3.format('.0%') },
   pre: { label: 'Preterm', f: (o, p) => sl(o, p).pre / sl(o, p).n, show: (v) => pct(v), axis: d3.format('.0%') },
-  ab: { label: 'Mother born abroad', f: (o, p) => sl('ab', p).n / sl('all', p).n, show: (v) => pct(v), axis: d3.format('.0%') },
+  ab: { label: 'Mother born abroad', f: (o, p) => abShare(p), show: (v) => pct(v), axis: d3.format('.0%') },
   // share of births with both parents' country recorded where neither was born in Spain (2006: neither is Spanish)
   both: { label: 'Both parents born abroad', f: (o, p) => { const g = sl('all', p).mixed[byNat() ? 'nat' : 'birth'].all; return g.k ? g.ab / g.k : NaN; }, show: (v) => pct(v), axis: d3.format('.0%') },
   mix: { label: 'Mixed couples', f: (o, p) => mixShare(sl(o, p)), show: (v) => pct(v), axis: d3.format('.0%') },
@@ -941,7 +955,7 @@ function drawProvTable() {
   const codes = Object.keys(DATA.meta.provinces);
   const all = codes.map((c) => ({ c, s: sl(state.origin, c) })).sort((a, b) => b.s.n - a.s.n);
   $('#prov-table').innerHTML = `<thead><tr><th>Province</th><th>Births</th><th>Mother's mean age</th><th>Caesarean</th><th>Preterm</th><th>Low weight</th><th>${METRICS.ab.label}</th><th>${METRICS.both.label}</th><th>Mixed couples (${UNION[state.union]}, ${MIX[state.mixDef].noun})</th></tr></thead><tbody>` +
-    all.map(({ c, s }) => `<tr><td>${provName(c)}</td><td>${fmt(s.n)}</td><td>${s.n ? meanAge(s).toFixed(1) : '–'}</td><td>${hasCes() ? pct(s.ces / s.n) : '–'}</td><td>${pct(s.pre / s.n)}</td><td>${pct(s.lbw / s.wKnown)}</td><td>${pct(sl('ab', c).n / sl('all', c).n)}</td><td>${pct(METRICS.both.f('all', c))}</td><td>${pct(mixShare(s))}</td></tr>`).join('') + '</tbody>';
+    all.map(({ c, s }) => `<tr><td>${provName(c)}</td><td>${fmt(s.n)}</td><td>${s.n ? meanAge(s).toFixed(1) : '–'}</td><td>${hasCes() ? pct(s.ces / s.n) : '–'}</td><td>${pct(s.pre / s.n)}</td><td>${pct(s.lbw / s.wKnown)}</td><td>${pct(abShare(c))}</td><td>${pct(METRICS.both.f('all', c))}</td><td>${pct(mixShare(s))}</td></tr>`).join('') + '</tbody>';
 }
 // ---------- Children per woman (computed: births by mother's age ÷ women of that age, summed over 15–49) ----------
 let TFR = null;
@@ -953,15 +967,19 @@ function drawTfr() {
   if (TFR === null) return emptyState(el, 'Loading…');
   const T = TFR && TFR[state.year];
   if (!T) return emptyState(el, `Children per woman is not available for ${state.year}.`);
-  const nat = T.basis === 'nationality';
+  const nat = T.basis === 'nationality', total = T.basis === 'total';
   const names = nat
     ? { all: 'All women', es: 'Spanish nationality', ab: 'Foreign nationality', eu: 'Rest of Europe', af: 'Africa', am: 'Americas', as: 'Asia' }
     : { all: 'All women', es: 'Born in Spain', ab: 'Born abroad', eu: 'Rest of Europe', af: 'Africa', am: 'Americas', as: 'Asia' };
   const order = ['all', 'es', 'ab', 'eu', 'af', 'am', 'as'];
   const d = order.filter((k) => T.groups[k]).map((k) => ({ k, name: names[k], ...T.groups[k], sub: ['eu', 'af', 'am', 'as'].includes(k) }));
   const popDate = new Date(T.popDate + 'T00:00:00').toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
-  $('#tfr-sub').textContent = `Total fertility rate in ${state.year}: the average number of children a woman would have at this year's birth rates for each age, by her ${nat ? 'nationality' : 'country of birth'}. All of Spain; the filters above don't apply.`;
-  $('#tfr-vars').textContent = `${nat ? 'EDADM · NACMAD' : 'EDADM · PAISNXM'} ÷ women aged 15–49 by single year of age and ${nat ? 'nationality' : 'country of birth'} on ${popDate} (INE Estadística Continua de Población, table 56939). Computed here, so it can differ slightly from INE's published indicator.`;
+  $('#tfr-sub').textContent = total
+    ? `Total fertility rate in ${state.year}: the average number of children a woman would have at this year's birth rates for each age. The ${state.year} file doesn't record the mother's origin, so only all women are shown. All of Spain; the filters above don't apply.`
+    : `Total fertility rate in ${state.year}: the average number of children a woman would have at this year's birth rates for each age, by her ${nat ? 'nationality' : 'country of birth'}. All of Spain; the filters above don't apply.`;
+  $('#tfr-vars').textContent = total
+    ? `EDADM ÷ women aged 15–49 by single year of age on ${popDate} (INE Estadística Continua de Población, table 56934). Computed here, so it can differ slightly from INE's published indicator.`
+    : `${nat ? 'EDADM · NACMAD' : 'EDADM · PAISNXM'} ÷ women aged 15–49 by single year of age and ${nat ? 'nationality' : 'country of birth'} on ${popDate} (INE Estadística Continua de Población, table 56939). Computed here, so it can differ slightly from INE's published indicator.`;
   const rowH = 30, gapSub = 26;
   const H = d.length * rowH + gapSub + 34;
   const { svg, g, w } = frame(el, H, { t: 8, r: 44, b: 26, l: 150 });
@@ -997,7 +1015,7 @@ function drawProvinces() {
   const M = METRICS[state.metric];
   const codes = Object.keys(DATA.meta.provinces);
   const vals = new Map(codes.map((c) => [c, { v: M.f(state.origin, c), n: sl(state.origin, c).n }]));
-  const ref = state.metric === 'ab' ? sl('ab', 'ES').n / sl('all', 'ES').n : M.f(state.origin, 'ES');
+  const ref = state.metric === 'ab' ? abShare('ES') : M.f(state.origin, 'ES');
   $('#prov-sub').textContent = `${M.label}${state.metric === 'mix' ? ` by ${MIX[state.mixDef].noun} (${UNION[state.union]})` : ''}${state.metric === 'both' ? ` (share of births where both parents' ${byNat() ? 'nationality' : 'country of birth'} is recorded)` : ''}, ${originTxt(state.origin)}, by province of residence. Click a province to filter by it.`;
   drawProvTable();
   if (GEO === null) return emptyState(el, 'Loading map…');
@@ -1081,6 +1099,7 @@ function drawProvinces() {
 function drawCountries(s) {
   const el = $('#c-countries');
   const entries = Object.entries(s.countries).sort((a, b) => b[1] - a[1]); // numeric-like keys lose insertion order
+  if (!hasOrigin()) return emptyState(el, NO_ORIGIN());
   if (state.origin === 'es') return emptyState(el, byNat() ? 'All mothers in this selection are Spanish.<br>Choose "All" or "Foreign" to see nationalities.' : 'All mothers in this selection were born in Spain.<br>Choose "All" or "Abroad" to see countries of birth.');
   if (!entries.length) return emptyState(el, `No ${byNat() ? 'foreign mothers' : 'mothers born abroad'} in this selection.`);
   const totAb = d3.sum(entries, (e) => e[1]) + s.countriesOther;
@@ -1133,6 +1152,7 @@ function drawMixed(s) {
   $('#mix-vars').textContent = DATA.meta.layout === '1996'
     ? `${D.vars} — the file records the baby's father; CAS is whether the mother is married. The ${state.year} file has nationality only, not country of birth.`
     : `${D.vars} — the file records the baby's father; ECIVM is the mother's marital status. "Unmarried" includes registered partnerships (PHECHO), recorded for only a third of these births.`;
+  if (!hasOrigin()) { $('#mix-vars').textContent = ''; return emptyState(el, NO_ORIGIN()); }
   if (!G.all.k) return emptyState(el, 'No births with both parents recorded in this selection.');
   const top = [['all', 'All couples'], ['mar', 'Married mothers'], ['unm', 'Unmarried mothers']]
     .map(([k, name]) => ({ k, name, v: G[k].d, of: G[k].k, p: G[k].k ? G[k].d / G[k].k : 0 }));
@@ -1158,6 +1178,7 @@ function drawParentCountries(s, who) {
   $(`#${who}-title`).textContent = MIX[state.mixDef].dir[isMom ? 1 : 0];
   $(`#${who}-sub`).textContent = `${ab[0].toUpperCase() + ab.slice(1)}'s ${MIX[state.mixDef].noun} · ${fmt(tot)} births`;
   $(`#${who}-vars`).textContent = `Top 10 · ${UNION[state.union]} · ${nat ? 'PAISNACM · PAISNACP' : 'PAISNXM · PAISNXP'}`;
+  if (!hasOrigin()) { $(`#${who}-sub`).textContent = `${ab[0].toUpperCase() + ab.slice(1)}'s ${MIX[state.mixDef].noun}`; $(`#${who}-vars`).textContent = ''; return emptyState(el, NO_ORIGIN()); }
   if (!m[who].length) return emptyState(el, 'No births of this kind in this selection.');
   const d = m[who].map(([k, v]) => ({ k, v, name: DATA.meta.countries[k] || k }));
   const isMomBars = isMom;
@@ -1178,14 +1199,30 @@ function drawParentCountries(s, who) {
 // ---------- state & wiring ----------
 function syncControls() {
   document.querySelectorAll('#year button').forEach((b) => b.setAttribute('aria-selected', String(b.dataset.v === state.year)));
-  document.querySelectorAll('#origin button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.v === state.origin)));
+  // 1995 has no origin: show everyone, and bring the earlier choice back on the other years
+  const orig = !DATA || hasOrigin();
+  if (!orig) {
+    if (state.origin !== 'all') { state.originWas = state.origin; state.origin = 'all'; }
+    if (state.ageCont !== 'all') { state.ageContWas = state.ageCont; state.ageCont = 'all'; }
+    if (['ab', 'both', 'mix'].includes(state.metric)) { state.metricWas = state.metric; state.metric = 'n'; }
+  } else {
+    for (const k of ['origin', 'ageCont', 'metric']) if (state[k + 'Was']) { state[k] = state[k + 'Was']; delete state[k + 'Was']; }
+  }
+  const noOrig = orig ? '' : `Not recorded in ${state.year}`;
+  document.querySelectorAll('#origin button').forEach((b) => {
+    b.setAttribute('aria-pressed', String(b.dataset.v === state.origin));
+    b.disabled = !orig && b.dataset.v !== 'all';
+    b.title = b.disabled ? noOrig : '';
+  });
+  document.querySelectorAll('#agecont button').forEach((b) => { b.disabled = !orig && b.dataset.v !== 'all'; b.title = b.disabled ? noOrig : ''; });
   if (state.origin !== 'all' && (state.metric === 'ab' || state.metric === 'both')) state.metric = 'n';
   if (!hasCes() && state.metric === 'ces') state.metric = 'n';
   document.querySelectorAll('#metric button').forEach((b) => {
     b.setAttribute('aria-pressed', String(b.dataset.v === state.metric));
     const noCes = b.dataset.v === 'ces' && !hasCes();
-    b.disabled = ((b.dataset.v === 'ab' || b.dataset.v === 'both') && state.origin !== 'all') || noCes;
-    b.title = noCes ? `Caesarean sections were not recorded in ${state.year}` : b.disabled ? `Available when "${$('#lbl-origin').textContent}" is All` : '';
+    const noO = !orig && ['ab', 'both', 'mix'].includes(b.dataset.v);
+    b.disabled = ((b.dataset.v === 'ab' || b.dataset.v === 'both') && state.origin !== 'all') || noCes || noO;
+    b.title = noCes ? `Caesarean sections were not recorded in ${state.year}` : noO ? `Parents' origin was not recorded in ${state.year}` : b.disabled ? `Available when "${$('#lbl-origin').textContent}" is All` : '';
   });
   // 2006 has nationality only: show nationality there, and go back to country of birth on the other years
   if (byNat() && state.mixDef === 'birth') { state.mixDef = 'nat'; state.mixWasBirth = true; }
@@ -1240,7 +1277,7 @@ function selectYear(y) {
       $('#prov').insertAdjacentHTML('beforeend', opts.map(([c, n]) => `<option value="${c}">${n}</option>`).join(''));
       provsFilled = true;
     }
-    if (!DATA.slices[`${state.origin}|${state.prov}`]) Object.assign(state, { origin: 'all', prov: 'ES' });
+    if (!DATA.slices[`all|${state.prov}`]) state.prov = 'ES';
     document.querySelectorAll('.yr').forEach((el) => { el.textContent = y; });
     document.title = `Nacimientos ${y}`;
     $('#src-file').textContent = YEARS[y].src;
