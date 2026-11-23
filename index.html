@@ -892,7 +892,7 @@ function drawWed(s) {
     .attr('d', (p) => colPath(x(p.m), y(p.c), x.bandwidth(), h - y(p.c), 2))
     .on('mousemove', (ev, p) => showTip(ev, `<div class="t">${p.m === 0 ? 'Same month as the wedding' : `${p.m} month${p.m > 1 ? 's' : ''} after the wedding`}</div>${row('First births', fmt(p.c))}${row('Share', pct(p.c / tot))}`))
     .on('mouseleave', hideTip);
-  g.append('text').attr('class', 'lbl-strong halo').attr('x', 0).attr('y', -10).text(`${pct(early)} under 8 months`);
+  g.append('text').attr('class', 'lbl-strong halo').attr('x', 0).attr('y', -10).text(`${pct(early / tot)} under 8 months`);
   g.append('text').attr('class', 'lbl halo').attr('x', w).attr('y', -10).attr('text-anchor', 'end').text(`${pct(over / tot)} after more than ${max / 12} years (not shown)`);
 }
 
