@@ -9,11 +9,11 @@ TFR = sum over ages 15..49 of births(age) / women(age). Births to mothers under 
 count at 15 and over 49 at 49. "Rest of Europe" = all foreign-born (or foreign) women
 minus Africa, the Americas, Asia and Oceania, because the EU/non-EU split only starts in 2012.
 
-1995 has no mother's origin, so it gets "All women" only, from table 56934 (women by single age since 1971).
+1985 and 1995 have no mother's origin, so they get "All women" only, from table 56934 (women by single age since 1971).
 Years already in out.json and not named on the command line are kept as they are.
 
 Usage:
-    python build_tfr.py out.json 2025=data.json 2015=data-2015.json 2006=data-2006.json 1995=data-1995.json
+    python build_tfr.py out.json 2025=data.json 2015=data-2015.json 2006=data-2006.json 1995=data-1995.json 1985=data-1985.json
 """
 import json
 import re
@@ -27,10 +27,10 @@ TOTAL = '16420'
 SPAIN_BP, SPAIN_NAT, FOREIGN = '274511', '21386', '274512'
 AFRICA, N_AMERICA, C_AMERICA, S_AMERICA, ASIA, OCEANIA = '9947', '292919', '292918', '16435', '9966', '16438'
 # population date per year: mid-year where available; 2025 only has 1 January
-POP_DATE = {'1995': '1995-07-01', '2006': '2006-07-01', '2015': '2015-07-01', '2025': '2025-01-01'}
+POP_DATE = {'1985': '1985-07-01', '1995': '1995-07-01', '2006': '2006-07-01', '2015': '2015-07-01', '2025': '2025-01-01'}
 # the 2006 births file has nationality only, so 2006 uses women by nationality;
 # the 1995 file has no origin at all, and table 56939 starts in 2002, so 1995 uses all women from table 56934
-BASIS = {'2006': 'nationality', '1995': 'total'}
+BASIS = {'2006': 'nationality', '1995': 'total', '1985': 'total'}
 API_LONG = 'https://servicios.ine.es/wstempus/js/ES/DATOS_TABLA/56934?date={date}'  # women by single age, from 1971
 
 
