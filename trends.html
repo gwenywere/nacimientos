@@ -188,6 +188,14 @@ footer a { color: var(--accent); text-underline-offset: 2px; }
 .seg.seg-sm button { font-size: 12px; padding: 3px 9px; }
 .view-note { color: var(--fg-2); font-size: 12.5px; margin: 4px 0 0; max-width: 100ch; }
 .legend:empty { display: none; }
+.grid { grid-auto-flow: row dense; } /* an enlarged card leaves no hole: the next card moves up */
+.card.wide { grid-column: span 12; }
+.expand {
+  font: inherit; font-size: 12px; color: var(--accent); background: none; border: 1px solid var(--border); border-radius: 6px;
+  padding: 2px 8px; cursor: pointer; margin-left: auto; white-space: nowrap;
+}
+.expand:hover { background: var(--bg); }
+.expand:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 @media (max-width: 1000px) { .kpis.k4 { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 </style>
 
@@ -374,7 +382,8 @@ function lineChart(id, opt) {
   const el = $(id);
   const narrow = el.clientWidth < 520;
   const m = { t: 14, r: opt.endLabels ? (narrow ? 44 : 56) : 14, b: 24, l: 44 };
-  const { svg, g, w, h } = frame(el, opt.height || 220, m);
+  const big = el.closest('.card')?.classList.contains('wide');
+  const { svg, g, w, h } = frame(el, Math.round((opt.height || 220) * (big ? 1.7 : 1)), m);
   const YY = opt.from ? Y.filter((yr) => +yr >= opt.from) : Y;
   const x = d3.scaleLinear().domain(d3.extent(YY.map(Number))).range([0, w]);
   const pts = opt.series.map((s) => YY.map((yr) => ({ yr: +yr, v: s.get(T.years[yr]) })));
@@ -663,6 +672,25 @@ document.querySelectorAll('#view button').forEach((b) => b.addEventListener('cli
   renderAll(); // redraw everything so the shared hover keeps working across charts
 }));
 
+// ---------- enlarge a card: full width and taller ----------
+function addExpandButtons() {
+  document.querySelectorAll('.grid .card').forEach((card) => {
+    const b = document.createElement('button');
+    b.type = 'button'; b.className = 'expand'; b.textContent = 'Enlarge';
+    b.setAttribute('aria-expanded', 'false');
+    b.setAttribute('aria-label', `Enlarge chart: ${card.querySelector('h2').textContent}`);
+    b.addEventListener('click', () => {
+      const on = card.classList.toggle('wide');
+      b.textContent = on ? 'Shrink' : 'Enlarge';
+      b.setAttribute('aria-expanded', String(on));
+      b.setAttribute('aria-label', `${on ? 'Shrink' : 'Enlarge'} chart: ${card.querySelector('h2').textContent}`);
+      renderAll();
+      card.scrollIntoView({ block: 'nearest', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+    });
+    card.querySelector('.head').appendChild(b);
+  });
+}
+
 // ---------- load ----------
 fetch('trends.json').then((r) => r.json()).then((t) => {
   T = t;
@@ -680,6 +708,7 @@ fetch('trends.json').then((r) => r.json()).then((t) => {
     noPartos.length ? `No deliveries file for ${noPartos.join(', ')}.` : '',
   ].join(' ');
   kpis();
+  addExpandButtons();
   renderAll();
 }).catch((e) => { $('#status').textContent = 'Could not load trends.json'; console.error(e); });
 
