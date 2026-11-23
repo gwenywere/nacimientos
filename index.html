@@ -125,6 +125,7 @@ button:focus-visible, select:focus-visible, summary:focus-visible { outline: 2px
 .legend { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 12px; color: var(--fg-2); }
 .legend i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
 .legend i.line { height: 3px; border-radius: 2px; width: 14px; vertical-align: 3px; }
+.legend i.dash { width: 0; height: 12px; border-radius: 0; border-left: 1px dashed var(--fg-2); vertical-align: -2px; }
 .chart { width: 100%; position: relative; }
 .scroll-x { overflow-x: auto; }
 .empty { display: grid; place-items: center; min-height: 200px; color: var(--muted); font-size: 13px; text-align: center; padding: 16px; }
@@ -213,6 +214,7 @@ footer a { color: var(--accent); text-underline-offset: 2px; }
     <article class="card span-12">
       <div class="head">
         <div><h2>Children per woman</h2><p class="sub" id="tfr-sub">Total fertility rate: the average number of children a woman would have at this year's birth rates for each age. All of Spain; the filters above don't apply.</p></div>
+        <div class="legend"><span><i class="dash"></i>2.1 = replacement level</span></div>
       </div>
       <div class="chart" id="c-tfr"></div>
       <div class="vars" id="tfr-vars">EDADM · PAISNXM ÷ women aged 15–49 by age and country of birth (INE Estadística Continua de Población, table 56939)</div>
@@ -752,7 +754,7 @@ function drawTfr() {
   $('#tfr-vars').textContent = `${nat ? 'EDADM · NACMAD' : 'EDADM · PAISNXM'} ÷ women aged 15–49 by single year of age and ${nat ? 'nationality' : 'country of birth'} on ${popDate} (INE Estadística Continua de Población, table 56939). Computed here, so it can differ slightly from INE's published indicator.`;
   const rowH = 30, gapSub = 26;
   const H = d.length * rowH + gapSub + 34;
-  const { svg, g, w } = frame(el, H, { t: 8, r: 120, b: 26, l: 150 });
+  const { svg, g, w } = frame(el, H, { t: 8, r: 44, b: 26, l: 150 });
   svg.attr('aria-label', `Children per woman in ${state.year} by mother's ${nat ? 'nationality' : 'country of birth'}`);
   const yOf = (i) => i * rowH + (d[i].sub ? gapSub : 0);
   const x = d3.scaleLinear([0, Math.max(2.4, d3.max(d, (p) => p.tfr) * 1.05)], [0, w]).nice();
@@ -773,7 +775,6 @@ function drawTfr() {
   });
   const xr = x(2.1), bottom = yOf(d.length - 1) + rowH;
   g.append('line').attr('class', 'ref-line').attr('x1', xr).attr('x2', xr).attr('y1', -4).attr('y2', bottom);
-  g.append('text').attr('class', 'lbl halo').attr('x', xr + 6).attr('y', 6).text('2.1 = replacement level');
 }
 
 let GEO = null; // simplified GADM provinces, feature id = INE province code
