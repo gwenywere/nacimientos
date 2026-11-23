@@ -216,11 +216,16 @@ footer a { color: var(--accent); text-underline-offset: 2px; }
 
     <article class="card span-6">
       <div class="head">
-        <div><h2>Children per woman</h2><p class="sub">Total fertility rate: births at each age 15–49 ÷ women of that age, summed</p></div>
-        <div class="legend"><span><i class="dash"></i>2.1 = replacement level</span></div>
+        <div><h2>Children per woman</h2><p class="sub" id="tfr-sub">Total fertility rate: births at each age 15–49 ÷ women of that age, summed</p></div>
+        <div class="seg" id="tfr-view" role="group" aria-label="Group mothers by">
+          <button type="button" data-v="all" aria-pressed="true">All women</button>
+          <button type="button" data-v="origin" aria-pressed="false">Spain and abroad</button>
+          <button type="button" data-v="cont" aria-pressed="false">By continent</button>
+        </div>
       </div>
+      <div class="legend" id="lg-tfr"></div>
       <div class="chart" id="c-tfr"></div>
-      <div class="vars">EDADM · women by age on 1 July, INE table 56934</div>
+      <div class="vars" id="tfr-vars">EDADM · women by age on 1 July, INE table 56934</div>
     </article>
 
     <article class="card span-6">
@@ -305,7 +310,7 @@ footer a { color: var(--accent); text-underline-offset: 2px; }
 </main>
 
 <footer class="wrap">
-  <p>Source: <a href="https://ine.es/dyngs/INEbase/es/operacion.htm?c=Estadistica_C&amp;cid=1254736177007&amp;menu=resultados&amp;idp=1254735573002#_tabs-1254736195443" target="_blank" rel="noopener noreferrer">INE, Movimiento Natural de la Población</a>, anonymised microdata: births (one record per live birth) and deliveries (one record per delivery, with every baby's outcome). Children per woman uses women by single year of age on 1 July from <a href="https://www.ine.es/jaxiT3/Tabla.htm?t=56934" target="_blank" rel="noopener noreferrer">INE table 56934</a>.</p>
+  <p>Source: <a href="https://ine.es/dyngs/INEbase/es/operacion.htm?c=Estadistica_C&amp;cid=1254736177007&amp;menu=resultados&amp;idp=1254735573002#_tabs-1254736195443" target="_blank" rel="noopener noreferrer">INE, Movimiento Natural de la Población</a>, anonymised microdata: births (one record per live birth) and deliveries (one record per delivery, with every baby's outcome). Children per woman uses women by single year of age on 1 July from <a href="https://www.ine.es/jaxiT3/Tabla.htm?t=56934" target="_blank" rel="noopener noreferrer">INE table 56934</a>; by mother's origin, women by age and nationality or country of birth from <a href="https://www.ine.es/jaxiT3/Tabla.htm?t=56939" target="_blank" rel="noopener noreferrer">INE table 56939</a> (from 2002; 1 January for 2025, the latest date it has). "Rest of Europe" is all women from abroad minus Africa, the Americas, Asia and Oceania. Births with no origin recorded are left out of the origin lines.</p>
   <p>INE changed the record layout in 1980, 1996 and 2007; dotted lines mark a change where it affects a chart. 1975–79 records legitimacy instead of marital status, and has no weights. The 1975–79 deliveries files cover multiple deliveries only, so stillbirths start in 1980. Before 1996 the files record neither nationality nor country of birth.</p>
   <p>Quirks in the files themselves, left as they are: caesareans drop to about 18% in 2008 and 2009 (26–27% in the years around them), which looks like incomplete recording; in 2007 the share of first children jumps by four points and fathers' mean age dips; in 2007 and 2008 the mother's country of birth is filled in only when it is not Spain, so a blank is counted as Spain.</p>
   <p id="foot-gaps"></p>
@@ -348,15 +353,16 @@ function legend(id, series) {
 }
 
 // ---------- one line chart over the years ----------
-// opt: { series: [{ label, color, get(d) }], fmt(v), axisFmt(v), zero, refs: [v], breaks: [{ year, label }], height, endLabels, annotate, tipExtra }
+// opt: { series: [{ label, color, get(d) }], fmt(v), axisFmt(v), zero, refs: [v], breaks: [{ year, label }], height, endLabels, annotate, tipExtra,
+//        from: first year shown (default: all years) }
 function lineChart(id, opt) {
   const el = $(id);
   const narrow = el.clientWidth < 520;
   const m = { t: 14, r: opt.endLabels ? (narrow ? 44 : 56) : 14, b: 24, l: 44 };
   const { svg, g, w, h } = frame(el, opt.height || 220, m);
-  const yrs = Y.map(Number);
-  const x = d3.scaleLinear().domain(d3.extent(yrs)).range([0, w]);
-  const pts = opt.series.map((s) => Y.map((yr) => ({ yr: +yr, v: s.get(T.years[yr]) })));
+  const YY = opt.from ? Y.filter((yr) => +yr >= opt.from) : Y;
+  const x = d3.scaleLinear().domain(d3.extent(YY.map(Number))).range([0, w]);
+  const pts = opt.series.map((s) => YY.map((yr) => ({ yr: +yr, v: s.get(T.years[yr]) })));
   const vals = pts.flat().map((p) => p.v).filter((v) => v != null).concat(opt.refs || []);
   let [lo, hi] = d3.extent(vals);
   const pad = (hi - lo) * 0.08 || 1;
@@ -381,11 +387,16 @@ function lineChart(id, opt) {
       if (q.v != null && (p[j - 1]?.v == null) && (p[j + 1]?.v == null))
         g.append('circle').attr('cx', x(q.yr)).attr('cy', y(q.v)).attr('r', 2.5).attr('fill', opt.series[i].color);
     });
-    if (opt.endLabels) {
-      const last = [...p].reverse().find((q) => q.v != null);
-      if (last) g.append('text').attr('class', 'lbl-strong halo').attr('x', x(last.yr) + 6).attr('y', y(last.v) + 4).text(opt.fmt(last.v));
-    }
   });
+  if (opt.endLabels) {
+    // value at the end of each line; labels closer than 12px are pushed apart
+    const ends = pts.map((p) => [...p].reverse().find((q) => q.v != null)).filter(Boolean)
+      .map((q) => ({ x: x(q.yr) + 6, y: y(q.v) + 4, t: opt.fmt(q.v) })).sort((a, b) => a.y - b.y);
+    ends.forEach((e, i) => { if (i && e.y - ends[i - 1].y < 12) e.y = ends[i - 1].y + 12; });
+    const over = ends.length ? ends[ends.length - 1].y - (h + 4) : 0;
+    if (over > 0) ends.forEach((e) => { e.y -= over; });
+    ends.forEach((e) => g.append('text').attr('class', 'lbl-strong halo').attr('x', e.x).attr('y', e.y).text(e.t));
+  }
   if (opt.annotate) opt.annotate(g, x, y, pts);
 
   // hover: a rule and dots for the shared year
@@ -393,7 +404,7 @@ function lineChart(id, opt) {
   hov.append('line').attr('class', 'hover-rule').attr('y1', 0).attr('y2', h);
   const dots = opt.series.map((s) => hov.append('circle').attr('r', 4).attr('fill', s.color).attr('stroke', css('--surface')).attr('stroke-width', 2));
   const setHover = (yr) => {
-    if (yr == null) { hov.style('display', 'none'); return; }
+    if (yr == null || +yr < x.domain()[0] || +yr > x.domain()[1]) { hov.style('display', 'none'); return; }
     hov.style('display', null);
     hov.select('line').attr('x1', x(yr)).attr('x2', x(yr));
     dots.forEach((d, i) => {
@@ -467,11 +478,7 @@ function renderAll() {
       });
     },
   });
-  lineChart('#c-tfr', {
-    series: [{ label: 'Children per woman', color: S('--s1'), get: (d) => d.tfr }],
-    fmt: (v) => v.toFixed(2), axisFmt: f1, refs: [2.1], endLabels: true,
-    tipExtra: (d) => d.tfr == null ? '' : row('Mean age of mothers', d.meanAgeM == null ? '–' : f1(d.meanAgeM)),
-  });
+  drawTfr();
   const age = [
     { label: 'Father', color: S('--s2'), get: (d) => d.meanAgeP },
     { label: 'Mother', color: S('--s1'), get: (d) => d.meanAgeM },
@@ -527,6 +534,48 @@ function renderAll() {
   legend('#lg-health', health);
   lineChart('#c-health', { series: health, fmt: fp, axisFmt: fp0, zero: true, endLabels: true, height: 240 });
 }
+
+// ---------- children per woman: all women, or by mother's origin (from 2002) ----------
+let tfrView = 'all';
+try { tfrView = localStorage.getItem('nac-trends-tfr') || 'all'; } catch (e) {}
+function drawTfr() {
+  const S = (k) => css(k);
+  const O = (g) => (d) => d.tfrO?.[g];
+  const all = { label: 'All women', color: S('--s1'), get: (d) => d.tfr };
+  const views = {
+    all: [all],
+    origin: [{ ...all, color: S('--fg-2') }, { label: 'Spain', color: S('--s1'), get: O('es') }, { label: 'Abroad', color: S('--s2'), get: O('ab') }],
+    cont: [{ ...all, color: S('--fg-2') }, { label: 'Rest of Europe', color: S('--s2'), get: O('eu') }, { label: 'Africa', color: S('--s3'), get: O('af') },
+      { label: 'Americas', color: S('--s1'), get: O('am') }, { label: 'Asia', color: S('--s4'), get: O('as') }],
+  };
+  if (!views[tfrView]) tfrView = 'all';
+  document.querySelectorAll('#tfr-view button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.v === tfrView)));
+  const series = views[tfrView], byOrigin = tfrView !== 'all';
+  $('#lg-tfr').innerHTML = (byOrigin ? series.map((s) => `<span><i class="line" style="background:${s.color}"></i>${s.label}</span>`).join('') : '')
+    + '<span><i class="dash"></i>2.1 = replacement level</span>';
+  const firstO = Y.find((yr) => T.years[yr].tfrO);
+  $('#tfr-sub').textContent = byOrigin
+    ? `Mother's origin from ${firstO}: nationality until 2006, country of birth from 2007. Women by origin come from INE table 56939, which starts in 2002`
+    : 'Total fertility rate: births at each age 15–49 ÷ women of that age, summed';
+  $('#tfr-vars').textContent = byOrigin
+    ? 'EDADM · PAISNACM (to 2006) · PAISNXM (from 2007) · women by age and origin on 1 July, INE table 56939'
+    : 'EDADM · women by age on 1 July, INE table 56934';
+  lineChart('#c-tfr', {
+    series, fmt: (v) => v.toFixed(2), axisFmt: f1, refs: [2.1], endLabels: true,
+    from: byOrigin && firstO ? +firstO : null,
+    breaks: byOrigin ? [{ year: 2007, label: 'nationality → country of birth' }] : [],
+    tipExtra: (d) => {
+      if (!byOrigin) return d.tfr == null ? '' : row('Mean age of mothers', d.meanAgeM == null ? '–' : f1(d.meanAgeM));
+      return d.tfrO ? row('Origin by', d.originBasis === 'nationality' ? 'nationality' : 'country of birth') : '';
+    },
+  });
+}
+document.querySelectorAll('#tfr-view button').forEach((b) => b.addEventListener('click', () => {
+  tfrView = b.dataset.v;
+  try { localStorage.setItem('nac-trends-tfr', tfrView); } catch (e) {}
+  // redraw everything so the shared hover keeps working across charts
+  renderAll();
+}));
 
 // ---------- load ----------
 fetch('trends.json').then((r) => r.json()).then((t) => {
