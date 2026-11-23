@@ -85,6 +85,11 @@ LAYOUT_1980 = {'SEMANAS': (8, 2), 'MESPAR': (10, 2), 'ANOPAR': (12, 2), 'MULTIPL
                'NORMA': (16, 1), 'PROREM': (26, 2), 'SORDENV': (28, 2), 'MESHAN': (30, 2), 'ANOHAN': (32, 2),
                'CAS': (34, 1), 'MESMAT': (36, 2), 'ANIOMAT': (38, 2), 'SEXO': (47, 1), 'PESON': (49, 4),
                'EDADM': (59, 2), 'EDADP': (67, 2)}
+# INE anonymised births 1975-1979 (50-char records, "disreg nac 75-79"). No weeks, weight, caesarean or origin;
+# marital status is the baby's legitimacy (LEGI); yes/no flags use 1 / 6.
+LAYOUT_1975 = {'MESPAR': (6, 2), 'ANOPAR': (8, 2), 'SEXO': (10, 1), 'LEGI': (11, 1), 'MULTIPLI': (14, 1),
+               'MATURI': (15, 1), 'NOD': (16, 1), 'MESMAT': (24, 2), 'ANIOMAT': (26, 2), 'SORDENV': (28, 2),
+               'MESHAN': (30, 2), 'ANOHAN': (32, 2), 'PROREM': (37, 2), 'EDADM': (45, 2), 'EDADP': (47, 2)}
 MARITAL_2016 = ['Married', 'Single', 'Separated or divorced', 'Widowed']
 MARITAL_1996 = ['Married', 'Not married']
 
@@ -94,6 +99,30 @@ def read_rows(src, dr):
     with open(src, encoding='latin-1') as fh:
         lines = [ln.rstrip('\r\n') for ln in fh if ln.strip()]
     width = max(len(ln) for ln in lines[:1000])
+    if width <= 55:
+        rows = []
+        flag = lambda v: {'1': '1', '6': '2'}.get(v, '')  # 1 = yes / normal, 6 = no / not normal -> 1 / 2
+        for ln in lines:
+            r = {k: ln[p - 1:p - 1 + n].strip() for k, (p, n) in LAYOUT_1975.items()}
+            r['ANOPAR'] = '19' + r['ANOPAR']
+            r['ANIOMAT'] = '19' + r['ANIOMAT'] if r['ANIOMAT'] not in ('', '00') else ''
+            r['EDADP'] = '' if r['EDADP'] in ('', '00', '99') else r['EDADP']
+            r['SEMANAS'] = r['PESON'] = ''
+            r['INTERSEM'], r['NORMA'] = flag(r.pop('MATURI')), flag(r.pop('NOD'))
+            r['ECIVM'] = flag(r.pop('LEGI'))  # legitimate birth = mother married
+            mh, ah = r.pop('MESHAN'), r.pop('ANOHAN')
+            r['INIHA'] = ''
+            # December of the year before is heaped (in 1975, 22,443 previous children "born" 12/74 against
+            # 6,000-8,000 in nearby months): treated as a filler for an unknown date and left out
+            filler = mh == '12' and ah.isdigit() and 1900 + int(ah) == int(r['ANOPAR']) - 1
+            if mh.isdigit() and ah.isdigit() and 1 <= int(mh) <= 12 and not filler:
+                d = (int(r['ANOPAR']) * 12 + int(r['MESPAR'])) - ((1900 + int(ah)) * 12 + int(mh))
+                r['INIHA'] = str(d) if d > 0 else ''
+            r['CESAREA'] = None
+            for k in ('PAISNXM', 'PAISNXP', 'PAISNACM', 'PAISNACP', 'NACIOEM', 'CUANNACM'):
+                r[k] = None
+            rows.append(r)
+        return rows, '1975'
     if width <= 70:
         rows = []
         for ln in lines:
@@ -150,8 +179,8 @@ def main():
     mAge, pAge = [min(m_ages), max(m_ages)], [min(p_ages), max(p_ages)]
     provinces = {k: v for k, v in dr['codelists']['TPROV'].items() if k.isdigit() and 1 <= int(k) <= 52}
 
-    old = fmt in ('1996', '1980')
-    has_origin = fmt != '1980'  # the 1980-95 layout records neither nationality nor country of birth
+    old = fmt in ('1996', '1980', '1975')
+    has_origin = fmt not in ('1980', '1975')  # the 1975-95 layouts record neither nationality nor country of birth
     ORIG = 'PAISNACM' if old else 'PAISNXM'  # 1996 layout has nationality only
     ORIG_P = 'PAISNACP' if old else 'PAISNXP'
     marital_labels = MARITAL_1996 if old else MARITAL_2016

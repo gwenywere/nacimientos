@@ -1,4 +1,4 @@
-<!doctype html><html lang="en"><head><meta charset=utf8><title>Nacimientos 1985–2025</title><meta name="description" content="Live births in Spain in 1985, 1995, 2006, 2015 and 2025 from INE microdata."><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<!doctype html><html lang="en"><head><meta charset=utf8><title>Nacimientos 1975–2025</title><meta name="description" content="Live births in Spain in 1975, 1985, 1995, 2006, 2015 and 2025 from INE microdata."><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@500;600&display=swap">
 <style>
@@ -192,6 +192,7 @@ footer a { color: var(--accent); text-underline-offset: 2px; }
         <button type="button" role="tab" data-v="2006" aria-selected="false">2006</button>
         <button type="button" role="tab" data-v="1995" aria-selected="false">1995</button>
         <button type="button" role="tab" data-v="1985" aria-selected="false">1985</button>
+        <button type="button" role="tab" data-v="1975" aria-selected="false">1975</button>
       </div>
     </div>
     <div class="field" role="group" aria-labelledby="lbl-origin">
@@ -445,12 +446,16 @@ const OLD_VARS = [[/CESAREA · /g, ''], [/SORDENV/g, 'NUMHV'], [/INTERSEM/g, 'MA
   [/NORMA\b/g, 'NORMAL'], [/ANIOMAT/g, 'ANOMAT']];
 // 1980–95 layout: same names as 1996, but months since the previous child come from its birth date
 const VARS_1980 = [[/ININHA/g, 'MESHAN · ANOHAN'], [/ · NACMAD/g, '']];
+// 1975–79 layout names, applied after the 1996 and 1980 renames
+const VARS_1975 = [[/MESHAN · ANOHAN/g, 'FECHANUH'], [/NUMHV/g, 'NUMHIJOS'], [/\bPROM\b/g, 'PROVRES'], [/\bCAS\b/g, 'LEGI'],
+  [/NORMAL/g, 'NOD'], [/EDADM/g, 'ANCUM'], [/EDADP/g, 'ANCUP'], [/MESPAR/g, 'MESNA'], [/ · ANOPAR/g, ''], [/MESMAT · ANOMAT/g, 'FECHAMM']];
 function mapVars() {
-  const lay = DATA.meta.layout, old = lay === '1996' || lay === '1980';
+  const lay = DATA.meta.layout, old = lay === '1996' || lay === '1980' || lay === '1975';
   document.querySelectorAll('.vars').forEach((el) => {
     if (!el.id) { if (el.dataset.orig == null) el.dataset.orig = el.textContent; el.textContent = el.dataset.orig; }
     if (old) el.textContent = OLD_VARS.reduce((t, [re, v]) => t.replace(re, v), el.textContent);
-    if (lay === '1980') el.textContent = VARS_1980.reduce((t, [re, v]) => t.replace(re, v), el.textContent);
+    if (lay === '1980' || lay === '1975') el.textContent = VARS_1980.reduce((t, [re, v]) => t.replace(re, v), el.textContent);
+    if (lay === '1975') el.textContent = VARS_1975.reduce((t, [re, v]) => t.replace(re, v), el.textContent);
   });
 }
 function yearLabels() {
@@ -483,6 +488,7 @@ const YEARS = {
   2006: { file: 'data-2006.json', src: 'NACIMIENTOS 2006', note: ', INE anonymised births layout used from 1996 (85-character records)' },
   1995: { file: 'data-1995.json', src: 'NACIA95', note: ', INE anonymised layout for 1980–1995 (68-character records)' },
   1985: { file: 'data-1985.json', src: 'NACIA85', note: ', INE anonymised layout for 1980–1995 (68-character records)' },
+  1975: { file: 'data-1975.json', src: 'NACIA75', note: ', INE anonymised layout for 1975–1979 (50-character records). Weeks of pregnancy and birth weight were not recorded; "married" means the birth was registered as legitimate. Previous children dated December 1974 are left out of the time since the previous child, because that date is heaped (about three times the nearby months)' },
 };
 const CACHE = {};
 const UNION = { all: 'all couples', mar: 'married mothers', unm: 'unmarried mothers' };
