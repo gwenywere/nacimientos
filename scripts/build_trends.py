@@ -43,63 +43,77 @@ def find_files(root):
     return out
 
 
+GROUPS = ('es', 'ab', 'eu', 'af', 'am', 'as')  # Spain, abroad, rest of Europe, Africa, Americas, Asia
+
+
+def origin_groups(code, year):
+    """Groups a mother's origin code falls in. In 2007-08 the country of birth is filled in only when it
+    is not Spain, so a blank is Spain there; elsewhere a blank is unknown. Oceania counts in 'ab' only."""
+    if code is None:
+        return ()
+    if not code:
+        if str(year) not in ('2007', '2008'):
+            return ()
+        code = SPAIN
+    if code == SPAIN:
+        return ('es',)
+    k = continent(code)
+    return ('ab', k) if k and k != 'es' else ('ab',)
+
+
 def births(path):
     dr = json.load(open(NAC_LAYOUT, encoding='utf-8'))
     fmt, rows = iter_rows(path, dr)
-    c = Counter()
-    ageM, ageM1 = Counter(), Counter()
-    ageO = {k: Counter() for k in ('es', 'ab', 'eu', 'af', 'am', 'as')}  # mother's age by origin
+    acc = {g: (Counter(), Counter(), Counter()) for g in ('all',) + GROUPS}  # counts, mother's age, age at first child
     years = Counter()
     for r in rows:
         years[r['ANOPAR']] += 1
-        # origin: country of birth where recorded (2007 on; blank = Spain in 2007-08), else nationality (1996-2006)
-        o = (r['PAISNXM'] or (SPAIN if r['ANOPAR'] in ('2007', '2008') else '')) if r['PAISNXM'] is not None else r['PAISNACM']
-        if o and r['EDADM'].isdigit():
-            a = int(r['EDADM'])
-            ageO['es' if o == SPAIN else 'ab'][a] += 1
-            k = continent(o)
-            if k and k != 'es':
-                ageO[k][a] += 1
-        c['n'] += 1
+        # origin: country of birth where recorded (2007 on), else nationality (1996-2006), else none
+        code = r['PAISNXM'] if r['PAISNXM'] is not None else r['PAISNACM']
         am = int(r['EDADM']) if r['EDADM'].isdigit() else None
         order = int(r['SORDENV']) if (r['SORDENV'] or '').isdigit() else 0
-        if am:
-            ageM[am] += 1
-            if order == 1:
-                ageM1[am] += 1
-        if r['EDADP'].isdigit():
-            c['pN'] += 1
-            c['pSum'] += int(r['EDADP'])
-        if order:
-            c['ordK'] += 1
-            c['ord1'] += order == 1
-            c['ord2'] += order == 2
-            c['ord3'] += order >= 3
-        c['boys'] += r['SEXO'] == '1'
-        c['girls'] += r['SEXO'] == '6'
-        c['mult'] += r['MULTIPLI'] not in ('', '1')
-        if r['ECIVM'] in ('1', '2', '3', '4'):
-            c['marK'] += 1
-            c['unm'] += r['ECIVM'] != '1'
-        if r['INTERSEM'] in ('1', '2'):
-            c['preK'] += 1
-            c['pre'] += r['INTERSEM'] == '2'
-        if r['PESON'].isdigit():  # a few records have typos such as '34OO'
-            c['wK'] += 1
-            c['lbw'] += int(r['PESON']) < 2500
-        if r['CESAREA'] in ('1', '2'):
-            c['cesK'] += 1
-            c['ces'] += r['CESAREA'] == '1'
-        if r['PAISNXM'] is not None and r['PAISNXM']:
-            c['bornK'] += 1
-            c['bornAb'] += r['PAISNXM'] != SPAIN
-        if r['PAISNXM'] is not None:
-            c['bornLay'] += 1
-        if r['PAISNACM'] is not None and r['PAISNACM']:
-            c['natK'] += 1
-            c['natAb'] += r['PAISNACM'] != SPAIN
-    return {'layout': fmt, 'fileYear': years.most_common(1)[0][0], 'c': dict(c),
-            'ageM': dict(ageM), 'ageM1': dict(ageM1), 'ageO': {k: dict(v) for k, v in ageO.items() if v},
+        for g in ('all',) + origin_groups(code, r['ANOPAR']):
+            c, ageM, ageM1 = acc[g]
+            c['n'] += 1
+            if am:
+                ageM[am] += 1
+                if order == 1:
+                    ageM1[am] += 1
+            if r['EDADP'].isdigit():
+                c['pN'] += 1
+                c['pSum'] += int(r['EDADP'])
+            if order:
+                c['ordK'] += 1
+                c['ord1'] += order == 1
+                c['ord2'] += order == 2
+                c['ord3'] += order >= 3
+            c['boys'] += r['SEXO'] == '1'
+            c['girls'] += r['SEXO'] == '6'
+            c['mult'] += r['MULTIPLI'] not in ('', '1')
+            if r['ECIVM'] in ('1', '2', '3', '4'):
+                c['marK'] += 1
+                c['unm'] += r['ECIVM'] != '1'
+            if r['INTERSEM'] in ('1', '2'):
+                c['preK'] += 1
+                c['pre'] += r['INTERSEM'] == '2'
+            if r['PESON'].isdigit():  # a few records have typos such as '34OO'
+                c['wK'] += 1
+                c['lbw'] += int(r['PESON']) < 2500
+            if r['CESAREA'] in ('1', '2'):
+                c['cesK'] += 1
+                c['ces'] += r['CESAREA'] == '1'
+            if g != 'all':
+                continue
+            if r['PAISNXM'] is not None and r['PAISNXM']:
+                c['bornK'] += 1
+                c['bornAb'] += r['PAISNXM'] != SPAIN
+            if r['PAISNXM'] is not None:
+                c['bornLay'] += 1
+            if r['PAISNACM'] is not None and r['PAISNACM']:
+                c['natK'] += 1
+                c['natAb'] += r['PAISNACM'] != SPAIN
+    return {'layout': fmt, 'fileYear': years.most_common(1)[0][0],
+            'groups': {g: [dict(x) for x in v] for g, v in acc.items() if v[0]['n']},
             'basis': 'birth' if fmt == '2016' else 'nationality' if fmt == '1996' else None}
 
 
@@ -110,23 +124,53 @@ def partos(path):
     if len(first.rstrip('\r\n')) < 40:  # 1975-79: multiple deliveries only, no use here
         return None
     _, _, read = partos_reader(first, dr)
-    k3, years = [0, 0, 0], Counter()
+    k3 = {g: [0, 0, 0] for g in ('all',) + GROUPS}
+    years = Counter()
     with open(path, encoding='latin-1') as fh:
         for ln in fh:
             if not ln.strip():
                 continue
             try:
-                year, _, _, _, babies = read(ln)
+                year, _, _, code, babies = read(ln)
             except ValueError:  # malformed record
                 continue
             years[year] += 1
+            targets = [k3[g] for g in ('all',) + origin_groups(code, year)]
             for clasif, alive in babies:
                 k = KIND.get(clasif)
                 if k is None:
                     k = 2 if alive == '2' else 0 if alive == '1' else None
                 if k is not None:
-                    k3[k] += 1
-    return {'fileYear': years.most_common(1)[0][0], 'k': k3}
+                    for t in targets:
+                        t[k] += 1
+    return {'fileYear': years.most_common(1)[0][0], 'k': k3['all'], 'kO': {g: v for g, v in k3.items() if g != 'all' and sum(v)}}
+
+
+def indicators(c, ageM, ageM1):
+    """The per-year numbers for one group of births."""
+    c, ageM, ageM1 = Counter(c), Counter({int(k): v for k, v in ageM.items()}), Counter({int(k): v for k, v in ageM1.items()})
+    return {
+        'births': c['n'], 'meanAgeM': mean(ageM), 'meanAgeM1': mean(ageM1),
+        'meanAgeP': round(c['pSum'] / c['pN'], 2) if c['pN'] else None,
+        'sexRatio': round(100 * c['boys'] / c['girls'], 2) if c['girls'] else None,
+        'unmarried': share(c['unm'], c['marK']),
+        'multiple': share(c['mult'], c['n']),
+        'preterm': share(c['pre'], c['preK']),
+        'lowWeight': share(c['lbw'], c['wK']) if c['wK'] > 0.5 * c['n'] else None,
+        'caesarean': share(c['ces'], c['cesK']) if c['cesK'] > 0.5 * c['n'] else None,
+        'order': [share(c['ord1'], c['ordK']), share(c['ord2'], c['ordK']), share(c['ord3'], c['ordK'])],
+        'teen': share(sum(v for k, v in ageM.items() if k < 20), c['n']),
+        'over40': share(sum(v for k, v in ageM.items() if k >= 40), c['n']),
+    }
+
+
+def partos_rates(k):
+    alive, died, still = k
+    if not alive + died + still:
+        return {}
+    return {'babies': alive + died + still, 'stillborn': still, 'died24': died,
+            'stillRate': round(1000 * still / (alive + died + still), 2),
+            'died24Rate': round(1000 * died / (alive + died), 2) if alive + died else None}
 
 
 def work(job):
@@ -199,35 +243,27 @@ def main():
         y = dict(old.get(str(year), {}))
         if 'nacim' in r:
             b = r['nacim']
-            c = Counter(b['c'])
-            ageM = Counter({int(k): v for k, v in b['ageM'].items()})
-            ageM1 = Counter({int(k): v for k, v in b['ageM1'].items()})
+            G = b['groups']
+            c = Counter(G['all'][0])
+            y.update(indicators(*G['all']))
             y.update({
-                'layout': b['layout'], 'births': c['n'],
-                'meanAgeM': mean(ageM), 'meanAgeM1': mean(ageM1),
-                'meanAgeP': round(c['pSum'] / c['pN'], 2) if c['pN'] else None,
-                'sexRatio': round(100 * c['boys'] / c['girls'], 2) if c['girls'] else None,
-                'unmarried': share(c['unm'], c['marK']),
-                'multiple': share(c['mult'], c['n']),
-                'preterm': share(c['pre'], c['preK']),
-                'lowWeight': share(c['lbw'], c['wK']) if c['wK'] > 0.5 * c['n'] else None,
-                'caesarean': share(c['ces'], c['cesK']) if c['cesK'] > 0.5 * c['n'] else None,
-                'order': [share(c['ord1'], c['ordK']), share(c['ord2'], c['ordK']), share(c['ord3'], c['ordK'])],
-                'teen': share(sum(v for k, v in ageM.items() if k < 20), c['n']),
-                'over40': share(sum(v for k, v in ageM.items() if k >= 40), c['n']),
+                'layout': b['layout'],
                 # 2007-08 files fill the mother's country of birth only when it is not Spain: blank = Spain there
                 'abroadBirth': share(c['bornAb'], c['bornK']) if c['bornK'] > 0.5 * c['n']
                 else share(c['bornAb'], c['n']) if c['bornLay'] and c['bornAb'] > 0.05 * c['n'] else None,
                 'abroadNat': share(c['natAb'], c['natK']) if c['natK'] > 0.5 * c['n'] else None,
-                '_ageM': {str(k): v for k, v in sorted(ageM.items())},
-                '_ageO': {g: {str(k): v for k, v in sorted(a.items())} for g, a in b['ageO'].items()},
+                '_ageM': {str(k): v for k, v in sorted(G['all'][1].items(), key=lambda kv: int(kv[0]))},
+                '_ageO': {g: {str(k): v for k, v in sorted(G[g][1].items(), key=lambda kv: int(kv[0]))} for g in GROUPS if g in G},
                 'originBasis': b['basis'],
+                # the same indicators for each origin group (1996 on: nationality to 2006, country of birth from 2007)
+                'o': {g: indicators(*G[g]) for g in GROUPS if g in G} or None,
             })
         if r.get('partos'):
-            alive, died, still = r['partos']['k']
-            y.update({'babies': alive + died + still, 'stillborn': still, 'died24': died,
-                      'stillRate': round(1000 * still / (alive + died + still), 2),
-                      'died24Rate': round(1000 * died / (alive + died), 2)})
+            y.update(partos_rates(r['partos']['k']))
+            if r['partos']['kO'] and y.get('o'):
+                for g, k in r['partos']['kO'].items():
+                    if g in y['o']:
+                        y['o'][g].update(partos_rates(k))
         out[str(year)] = y
 
     cache = {}

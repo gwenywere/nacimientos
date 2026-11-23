@@ -185,6 +185,9 @@ footer a { color: var(--accent); text-underline-offset: 2px; }
 .hover-rule { stroke: var(--fg-2); stroke-width: 1; }
 .brk { stroke: var(--axis); stroke-dasharray: 2 3; }
 .brk-lbl { fill: var(--muted); font-size: 10px; }
+.seg.seg-sm button { font-size: 12px; padding: 3px 9px; }
+.view-note { color: var(--fg-2); font-size: 12.5px; margin: 4px 0 0; max-width: 100ch; }
+.legend:empty { display: none; }
 @media (max-width: 1000px) { .kpis.k4 { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 </style>
 
@@ -197,6 +200,14 @@ footer a { color: var(--accent); text-underline-offset: 2px; }
 <div class="filters">
   <nav class="wrap nav" aria-label="Pages">
     <a href="index.html">← Yearly dashboard</a>
+    <div class="field" role="group" aria-labelledby="lbl-view">
+      <span id="lbl-view">Mothers</span>
+      <div class="seg" id="view">
+        <button type="button" data-v="all" aria-pressed="true">All</button>
+        <button type="button" data-v="origin" aria-pressed="false">Spain and abroad</button>
+        <button type="button" data-v="cont" aria-pressed="false">By continent</button>
+      </div>
+    </div>
     <span class="years">Open a year in detail: <span id="year-links"></span></span>
     <span class="status" id="status">Loading…</span>
   </nav>
@@ -204,12 +215,14 @@ footer a { color: var(--accent); text-underline-offset: 2px; }
 
 <main class="wrap">
   <section class="kpis k4" id="kpis" aria-label="First and latest year"></section>
+  <p class="view-note" id="view-note" hidden></p>
 
   <section class="grid">
     <article class="card span-12">
       <div class="head">
         <div><h2>Live births per year</h2><p class="sub">All live births registered in Spain</p></div>
       </div>
+      <div class="legend" id="lg-births"></div>
       <div class="chart" id="c-births"></div>
       <div class="vars">ANOPAR · one record per live birth</div>
     </article>
@@ -217,11 +230,6 @@ footer a { color: var(--accent); text-underline-offset: 2px; }
     <article class="card span-6">
       <div class="head">
         <div><h2>Children per woman</h2><p class="sub" id="tfr-sub">Total fertility rate: births at each age 15–49 ÷ women of that age, summed</p></div>
-        <div class="seg" id="tfr-view" role="group" aria-label="Group mothers by">
-          <button type="button" data-v="all" aria-pressed="true">All women</button>
-          <button type="button" data-v="origin" aria-pressed="false">Spain and abroad</button>
-          <button type="button" data-v="cont" aria-pressed="false">By continent</button>
-        </div>
       </div>
       <div class="legend" id="lg-tfr"></div>
       <div class="chart" id="c-tfr"></div>
@@ -231,8 +239,9 @@ footer a { color: var(--accent); text-underline-offset: 2px; }
     <article class="card span-6">
       <div class="head">
         <div><h2>Parents' mean age</h2><p class="sub">Age at the birth, in completed years</p></div>
-        <div class="legend" id="lg-age"></div>
+        <div class="seg seg-sm" id="m-age" role="group" aria-label="Measure" hidden></div>
       </div>
+      <div class="legend" id="lg-age"></div>
       <div class="chart" id="c-age"></div>
       <div class="vars">EDADM · EDADP · SORDENV</div>
     </article>
@@ -240,8 +249,9 @@ footer a { color: var(--accent); text-underline-offset: 2px; }
     <article class="card span-6">
       <div class="head">
         <div><h2>Stillbirths and deaths in the first day</h2><p class="sub">Stillborn per 1,000 babies; died within 24 hours per 1,000 born alive</p></div>
-        <div class="legend" id="lg-partos"></div>
+        <div class="seg seg-sm" id="m-partos" role="group" aria-label="Measure" hidden></div>
       </div>
+      <div class="legend" id="lg-partos"></div>
       <div class="chart" id="c-partos"></div>
       <div class="vars">Deliveries file · CLASIF per baby · from 1980</div>
     </article>
@@ -249,8 +259,8 @@ footer a { color: var(--accent); text-underline-offset: 2px; }
     <article class="card span-6">
       <div class="head">
         <div><h2>Boys per 100 girls</h2><p class="sub">Sex ratio at birth</p></div>
-        <div class="legend"><span><i class="dash"></i>105 = usual ratio</span></div>
       </div>
+      <div class="legend" id="lg-sex"></div>
       <div class="chart" id="c-sex"></div>
       <div class="vars">SEXO</div>
     </article>
@@ -259,15 +269,16 @@ footer a { color: var(--accent); text-underline-offset: 2px; }
       <div class="head">
         <div><h2>Births outside marriage</h2><p class="sub">Share of births to mothers who were not married</p></div>
       </div>
+      <div class="legend" id="lg-unm"></div>
       <div class="chart" id="c-unm"></div>
       <div class="vars">ECIVM (1975–79: LEGI, legitimacy)</div>
     </article>
 
     <article class="card span-6">
       <div class="head">
-        <div><h2>Mothers from abroad</h2><p class="sub">Share of births. Nationality is recorded from 1996, country of birth from 2007</p></div>
-        <div class="legend" id="lg-ab"></div>
+        <div><h2>Mothers from abroad</h2><p class="sub" id="ab-sub">Share of births. Nationality is recorded from 1996, country of birth from 2007</p></div>
       </div>
+      <div class="legend" id="lg-ab"></div>
       <div class="chart" id="c-ab"></div>
       <div class="vars">PAISNACM · PAISNXM</div>
     </article>
@@ -275,8 +286,9 @@ footer a { color: var(--accent); text-underline-offset: 2px; }
     <article class="card span-6">
       <div class="head">
         <div><h2>First, second, third or later child</h2><p class="sub">Share of births by the baby's place among the mother's live-born children</p></div>
-        <div class="legend" id="lg-order"></div>
+        <div class="seg seg-sm" id="m-order" role="group" aria-label="Measure" hidden></div>
       </div>
+      <div class="legend" id="lg-order"></div>
       <div class="chart" id="c-order"></div>
       <div class="vars">SORDENV</div>
     </article>
@@ -284,8 +296,9 @@ footer a { color: var(--accent); text-underline-offset: 2px; }
     <article class="card span-6">
       <div class="head">
         <div><h2>Very young and older mothers</h2><p class="sub">Share of births to mothers under 20 and aged 40 or more</p></div>
-        <div class="legend" id="lg-young"></div>
+        <div class="seg seg-sm" id="m-young" role="group" aria-label="Measure" hidden></div>
       </div>
+      <div class="legend" id="lg-young"></div>
       <div class="chart" id="c-young"></div>
       <div class="vars">EDADM</div>
     </article>
@@ -294,6 +307,7 @@ footer a { color: var(--accent); text-underline-offset: 2px; }
       <div class="head">
         <div><h2>Twins and other multiple births</h2><p class="sub">Share of babies born in a delivery of two or more</p></div>
       </div>
+      <div class="legend" id="lg-mult"></div>
       <div class="chart" id="c-mult"></div>
       <div class="vars">MULTIPLI</div>
     </article>
@@ -301,8 +315,9 @@ footer a { color: var(--accent); text-underline-offset: 2px; }
     <article class="card span-12">
       <div class="head">
         <div><h2>Preterm, low weight and caesarean</h2><p class="sub">Share of births. Weight is recorded from 1980, caesarean from 2007; preterm = under 37 weeks</p></div>
-        <div class="legend" id="lg-health"></div>
+        <div class="seg seg-sm" id="m-health" role="group" aria-label="Measure" hidden></div>
       </div>
+      <div class="legend" id="lg-health"></div>
       <div class="chart" id="c-health"></div>
       <div class="vars">INTERSEM · PESON · CESAREA</div>
     </article>
@@ -457,124 +472,195 @@ function kpis() {
   ].join('');
 }
 
+// ---------- mothers: all, Spain and abroad, or by continent ----------
+// The births files record the mother's nationality from 1996 and her country of birth from 2007;
+// each year's "o" holds the same indicators per origin group.
+let view = 'all';
+const measure = { age: 1, partos: 0, order: 0, young: 0, health: 1 };
+try {
+  view = localStorage.getItem('nac-trends-view') || localStorage.getItem('nac-trends-tfr') || 'all';
+  Object.assign(measure, JSON.parse(localStorage.getItem('nac-trends-measure') || '{}'));
+} catch (e) {}
+const saveView = () => { try { localStorage.setItem('nac-trends-view', view); localStorage.setItem('nac-trends-measure', JSON.stringify(measure)); } catch (e) {} };
+const GROUPS = {
+  origin: [['es', 'Spain', '--s1'], ['ab', 'Abroad', '--s2']],
+  cont: [['eu', 'Rest of Europe', '--s2'], ['af', 'Africa', '--s3'], ['am', 'Americas', '--s1'], ['as', 'Asia', '--s4']],
+};
+const ORIGIN_BREAK = { year: 2007, label: 'nationality → country of birth' };
+const basisRow = (d) => d.originBasis ? row('Origin by', d.originBasis === 'nationality' ? 'nationality' : 'country of birth') : '';
+
+// Draw one card. measures: [{ label, color, get(d) }] where d is a year (all mothers) or one origin group of a year.
+// In the origin views, one measure is shown (picked on the card when there are several), one line per group.
+// cfg: { key, measures, lineChart options, refLegend, allLabel, groupGet(d, g, m), from, noAllInCont, allOnly(opt) }
+function card(id, cfg) {
+  const S = (k) => css(k);
+  const pick = $(`#m-${cfg.key}`);
+  const refLegend = cfg.refLegend || '';
+  const lg = $(`#lg-${cfg.key}`);
+  const lgHtml = (series) => series.map((s) => `<span><i class="line" style="background:${s.color}"></i>${s.label}</span>`).join('');
+  if (view === 'all') {
+    if (pick) pick.hidden = true;
+    if (lg) lg.innerHTML = (cfg.measures.length > 1 ? lgHtml(cfg.measures) : '') + refLegend;
+    lineChart(id, { ...cfg.opt, ...(cfg.allOnly || {}), series: cfg.measures });
+    return;
+  }
+  let m = cfg.measures[0];
+  if (pick && cfg.measures.length > 1) {
+    const i = Math.min(measure[cfg.key] || 0, cfg.measures.length - 1);
+    m = cfg.measures[i];
+    pick.hidden = false;
+    pick.innerHTML = cfg.measures.map((x, j) => `<button type="button" data-i="${j}" aria-pressed="${j === i}">${x.short || x.label}</button>`).join('');
+    pick.querySelectorAll('button').forEach((b) => b.addEventListener('click', () => { measure[cfg.key] = +b.dataset.i; saveView(); renderAll(); }));
+  }
+  const gget = cfg.groupGet || ((d, g) => (d.o && d.o[g] ? m.get(d.o[g]) : undefined));
+  const series = (view === 'cont' && cfg.noAllInCont ? [] : [{ label: cfg.allLabel || 'All mothers', color: S('--fg-2'), get: m.get }])
+    .concat(GROUPS[view].map(([g, label, color]) => ({ label, color: S(color), get: (d) => gget(d, g, m) })));
+  if (lg) lg.innerHTML = lgHtml(series) + refLegend;
+  const from = cfg.from || +Y.find((yr) => T.years[yr].o);
+  lineChart(id, {
+    ...cfg.opt, series, from, breaks: [ORIGIN_BREAK], annotate: null,
+    tipExtra: (d) => (cfg.measures.length > 1 ? `<div class="row"><span>${m.label}</span></div>` : '') + basisRow(d),
+  });
+}
+
 // ---------- charts ----------
 function renderAll() {
   charts.length = 0;
   const S = (k) => css(k);
-  const births = { label: 'Live births', color: S('--s1'), get: (d) => d.births };
-  lineChart('#c-births', {
-    series: [births], fmt, axisFmt: fk, zero: true, height: 260, endLabels: true,
-    annotate: (g, x, y, [p]) => {
-      // label each turning point: the highest or lowest value within 6 years either side
-      const ok = p.filter((q) => q.v != null), W = 6;
-      ok.forEach((q) => {
-        const near = ok.filter((o) => Math.abs(o.yr - q.yr) <= W);
-        const hi = q.v === d3.max(near, (o) => o.v), lo = q.v === d3.min(near, (o) => o.v);
-        if (!hi && !lo) return;
-        g.append('circle').attr('cx', x(q.yr)).attr('cy', y(q.v)).attr('r', 3.5).attr('fill', S('--s1'));
-        g.append('text').attr('class', 'lbl halo').attr('x', x(q.yr)).attr('y', y(q.v) + (hi ? -10 : 18))
-          .attr('text-anchor', q.yr - ok[0].yr < 4 ? 'start' : ok[ok.length - 1].yr - q.yr < 4 ? 'end' : 'middle')
-          .text(`${fmt(q.v)} in ${q.yr}`);
-      });
-    },
-  });
-  drawTfr();
-  const age = [
-    { label: 'Father', color: S('--s2'), get: (d) => d.meanAgeP },
-    { label: 'Mother', color: S('--s1'), get: (d) => d.meanAgeM },
-    { label: 'Mother, first child', color: S('--ord3'), get: (d) => d.meanAgeM1 },
-  ];
-  legend('#lg-age', age);
-  lineChart('#c-age', { series: age, fmt: f1, endLabels: true });
-  const partos = [
-    { label: 'Stillborn per 1,000 babies', color: S('--s3'), get: (d) => d.stillRate },
-    { label: 'Died within 24 h per 1,000 born alive', color: S('--s2'), get: (d) => d.died24Rate },
-  ];
-  legend('#lg-partos', partos);
-  lineChart('#c-partos', {
-    series: partos, fmt: (v) => v.toFixed(2), axisFmt: f1, zero: true, endLabels: true,
-    tipExtra: (d) => d.stillborn == null ? '' : row('Stillborn', fmt(d.stillborn)) + row('Died within 24 h', fmt(d.died24)),
-  });
-  lineChart('#c-sex', {
-    series: [{ label: 'Boys per 100 girls', color: S('--s1'), get: (d) => d.sexRatio }],
-    fmt: f1, refs: [105], endLabels: true,
-  });
-  lineChart('#c-unm', {
-    series: [{ label: 'Births outside marriage', color: S('--s2'), get: (d) => d.unmarried }],
-    fmt: fp, axisFmt: fp0, zero: true, endLabels: true, breaks: [{ year: 1980, label: 'legitimacy → marital status' }],
-  });
-  const ab = [
-    { label: 'Foreign nationality', color: S('--s2'), get: (d) => d.abroadNat },
-    { label: 'Born abroad', color: S('--s1'), get: (d) => d.abroadBirth },
-  ];
-  legend('#lg-ab', ab);
-  lineChart('#c-ab', { series: ab, fmt: fp, axisFmt: fp0, zero: true, endLabels: true });
-  const order = [
-    { label: 'First child', color: S('--ord1'), get: (d) => d.order?.[0] },
-    { label: 'Second', color: S('--ord3'), get: (d) => d.order?.[1] },
-    { label: 'Third or later', color: S('--s3'), get: (d) => d.order?.[2] },
-  ];
-  legend('#lg-order', order);
-  lineChart('#c-order', { series: order, fmt: fp, axisFmt: fp0, zero: true, endLabels: true });
-  const young = [
-    { label: 'Under 20', color: S('--s2'), get: (d) => d.teen },
-    { label: '40 or older', color: S('--s4'), get: (d) => d.over40 },
-  ];
-  legend('#lg-young', young);
-  lineChart('#c-young', { series: young, fmt: fp, axisFmt: fp0, zero: true, endLabels: true });
-  lineChart('#c-mult', {
-    series: [{ label: 'Babies from multiple births', color: S('--s1'), get: (d) => d.multiple }],
-    fmt: (v) => v.toFixed(2) + '%', axisFmt: fp, zero: true, endLabels: true,
-  });
-  const health = [
-    { label: 'Caesarean', color: S('--s2'), get: (d) => d.caesarean },
-    { label: 'Preterm', color: S('--s3'), get: (d) => d.preterm },
-    { label: 'Under 2,500 g', color: S('--s4'), get: (d) => d.lowWeight },
-  ];
-  legend('#lg-health', health);
-  lineChart('#c-health', { series: health, fmt: fp, axisFmt: fp0, zero: true, endLabels: true, height: 240 });
-}
+  document.querySelectorAll('#view button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.v === view)));
+  const firstO = Y.find((yr) => T.years[yr].o);
+  $('#view-note').hidden = view === 'all';
+  $('#view-note').textContent = `By mother's origin from ${firstO}: nationality until 2006, country of birth from 2007 (dotted line). `
+    + 'Births with no origin recorded are left out. Groups with few births, such as mothers from Asia, move a lot from year to year, especially for rare events like deaths in the first day.';
 
-// ---------- children per woman: all women, or by mother's origin (from 2002) ----------
-let tfrView = 'all';
-try { tfrView = localStorage.getItem('nac-trends-tfr') || 'all'; } catch (e) {}
-function drawTfr() {
-  const S = (k) => css(k);
-  const O = (g) => (d) => d.tfrO?.[g];
-  const all = { label: 'All women', color: S('--s1'), get: (d) => d.tfr };
-  const views = {
-    all: [all],
-    origin: [{ ...all, color: S('--fg-2') }, { label: 'Spain', color: S('--s1'), get: O('es') }, { label: 'Abroad', color: S('--s2'), get: O('ab') }],
-    cont: [{ ...all, color: S('--fg-2') }, { label: 'Rest of Europe', color: S('--s2'), get: O('eu') }, { label: 'Africa', color: S('--s3'), get: O('af') },
-      { label: 'Americas', color: S('--s1'), get: O('am') }, { label: 'Asia', color: S('--s4'), get: O('as') }],
-  };
-  if (!views[tfrView]) tfrView = 'all';
-  document.querySelectorAll('#tfr-view button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.v === tfrView)));
-  const series = views[tfrView], byOrigin = tfrView !== 'all';
-  $('#lg-tfr').innerHTML = (byOrigin ? series.map((s) => `<span><i class="line" style="background:${s.color}"></i>${s.label}</span>`).join('') : '')
-    + '<span><i class="dash"></i>2.1 = replacement level</span>';
-  const firstO = Y.find((yr) => T.years[yr].tfrO);
-  $('#tfr-sub').textContent = byOrigin
-    ? `Mother's origin from ${firstO}: nationality until 2006, country of birth from 2007. Women by origin come from INE table 56939, which starts in 2002`
-    : 'Total fertility rate: births at each age 15–49 ÷ women of that age, summed';
-  $('#tfr-vars').textContent = byOrigin
-    ? 'EDADM · PAISNACM (to 2006) · PAISNXM (from 2007) · women by age and origin on 1 July, INE table 56939'
-    : 'EDADM · women by age on 1 July, INE table 56934';
-  lineChart('#c-tfr', {
-    series, fmt: (v) => v.toFixed(2), axisFmt: f1, refs: [2.1], endLabels: true,
-    from: byOrigin && firstO ? +firstO : null,
-    breaks: byOrigin ? [{ year: 2007, label: 'nationality → country of birth' }] : [],
-    tipExtra: (d) => {
-      if (!byOrigin) return d.tfr == null ? '' : row('Mean age of mothers', d.meanAgeM == null ? '–' : f1(d.meanAgeM));
-      return d.tfrO ? row('Origin by', d.originBasis === 'nationality' ? 'nationality' : 'country of birth') : '';
+  card('#c-births', {
+    key: 'births', noAllInCont: true,
+    measures: [{ label: 'Live births', color: S('--s1'), get: (d) => d.births }],
+    opt: { fmt, axisFmt: fk, zero: true, height: 260, endLabels: true },
+    allOnly: {
+      annotate: (g, x, y, [p]) => {
+        // label each turning point: the highest or lowest value within 6 years either side
+        const ok = p.filter((q) => q.v != null), W = 6;
+        ok.forEach((q) => {
+          const near = ok.filter((o) => Math.abs(o.yr - q.yr) <= W);
+          const hi = q.v === d3.max(near, (o) => o.v), lo = q.v === d3.min(near, (o) => o.v);
+          if (!hi && !lo) return;
+          g.append('circle').attr('cx', x(q.yr)).attr('cy', y(q.v)).attr('r', 3.5).attr('fill', S('--s1'));
+          g.append('text').attr('class', 'lbl halo').attr('x', x(q.yr)).attr('y', y(q.v) + (hi ? -10 : 18))
+            .attr('text-anchor', q.yr - ok[0].yr < 4 ? 'start' : ok[ok.length - 1].yr - q.yr < 4 ? 'end' : 'middle')
+            .text(`${fmt(q.v)} in ${q.yr}`);
+        });
+      },
     },
   });
+
+  // children per woman: by origin only from 2002, when INE's women by origin (table 56939) start
+  const firstT = Y.find((yr) => T.years[yr].tfrO);
+  card('#c-tfr', {
+    key: 'tfr', allLabel: 'All women', refLegend: '<span><i class="dash"></i>2.1 = replacement level</span>',
+    measures: [{ label: 'Children per woman', color: S('--s1'), get: (d) => d.tfr }],
+    groupGet: (d, g) => d.tfrO?.[g], from: firstT ? +firstT : null,
+    opt: { fmt: (v) => v.toFixed(2), axisFmt: f1, refs: [2.1], endLabels: true },
+    allOnly: { tipExtra: (d) => d.tfr == null ? '' : row('Mean age of mothers', d.meanAgeM == null ? '–' : f1(d.meanAgeM)) },
+  });
+  $('#tfr-sub').textContent = view === 'all'
+    ? 'Total fertility rate: births at each age 15–49 ÷ women of that age, summed'
+    : `Total fertility rate. By origin from ${firstT}, when INE's women by origin (table 56939) start`;
+  $('#tfr-vars').textContent = view === 'all'
+    ? 'EDADM · women by age on 1 July, INE table 56934'
+    : 'EDADM · PAISNACM (to 2006) · PAISNXM (from 2007) · women by age and origin, INE table 56939';
+
+  card('#c-age', {
+    key: 'age',
+    measures: [
+      { label: 'Father', short: 'Father', color: S('--s2'), get: (d) => d.meanAgeP },
+      { label: 'Mother', short: 'Mother', color: S('--s1'), get: (d) => d.meanAgeM },
+      { label: 'Mother, first child', short: 'Mother, first child', color: S('--ord3'), get: (d) => d.meanAgeM1 },
+    ],
+    opt: { fmt: f1, endLabels: true },
+  });
+
+  card('#c-partos', {
+    key: 'partos',
+    measures: [
+      { label: 'Stillborn per 1,000 babies', short: 'Stillborn', color: S('--s3'), get: (d) => d.stillRate },
+      { label: 'Died within 24 h per 1,000 born alive', short: 'Died within 24 h', color: S('--s2'), get: (d) => d.died24Rate },
+    ],
+    opt: { fmt: (v) => v.toFixed(2), axisFmt: f1, zero: true, endLabels: true },
+    allOnly: { tipExtra: (d) => d.stillborn == null ? '' : row('Stillborn', fmt(d.stillborn)) + row('Died within 24 h', fmt(d.died24)) },
+  });
+
+  card('#c-sex', {
+    key: 'sex', refLegend: '<span><i class="dash"></i>105 = usual ratio</span>',
+    measures: [{ label: 'Boys per 100 girls', color: S('--s1'), get: (d) => d.sexRatio }],
+    opt: { fmt: f1, refs: [105], endLabels: true },
+  });
+
+  card('#c-unm', {
+    key: 'unm',
+    measures: [{ label: 'Births outside marriage', color: S('--s2'), get: (d) => d.unmarried }],
+    opt: { fmt: fp, axisFmt: fp0, zero: true, endLabels: true },
+    allOnly: { breaks: [{ year: 1980, label: 'legitimacy → marital status' }] },
+  });
+
+  // mothers from abroad: by continent, each continent's share of all births
+  if (view === 'cont') {
+    card('#c-ab', {
+      key: 'ab', noAllInCont: true,
+      measures: [{ label: 'Share of all births', color: S('--s1'), get: () => undefined }],
+      groupGet: (d, g) => (d.o && d.o[g] && d.births ? (100 * d.o[g].births) / d.births : undefined),
+      opt: { fmt: fp, axisFmt: fp0, zero: true, endLabels: true },
+    });
+    $('#ab-sub').textContent = "Share of all births, by the mother's continent. Nationality until 2006, country of birth from 2007";
+  } else {
+    const ab = [
+      { label: 'Foreign nationality', color: S('--s2'), get: (d) => d.abroadNat },
+      { label: 'Born abroad', color: S('--s1'), get: (d) => d.abroadBirth },
+    ];
+    $('#lg-ab').innerHTML = ab.map((s) => `<span><i class="line" style="background:${s.color}"></i>${s.label}</span>`).join('');
+    lineChart('#c-ab', { series: ab, fmt: fp, axisFmt: fp0, zero: true, endLabels: true });
+    $('#ab-sub').textContent = 'Share of births. Nationality is recorded from 1996, country of birth from 2007';
+  }
+
+  card('#c-order', {
+    key: 'order',
+    measures: [
+      { label: 'First child', color: S('--ord1'), get: (d) => d.order?.[0] },
+      { label: 'Second', color: S('--ord3'), get: (d) => d.order?.[1] },
+      { label: 'Third or later', color: S('--s3'), get: (d) => d.order?.[2] },
+    ],
+    opt: { fmt: fp, axisFmt: fp0, zero: true, endLabels: true },
+  });
+
+  card('#c-young', {
+    key: 'young',
+    measures: [
+      { label: 'Under 20', color: S('--s2'), get: (d) => d.teen },
+      { label: '40 or older', color: S('--s4'), get: (d) => d.over40 },
+    ],
+    opt: { fmt: fp, axisFmt: fp0, zero: true, endLabels: true },
+  });
+
+  card('#c-mult', {
+    key: 'mult',
+    measures: [{ label: 'Babies from multiple births', color: S('--s1'), get: (d) => d.multiple }],
+    opt: { fmt: (v) => v.toFixed(2) + '%', axisFmt: fp, zero: true, endLabels: true },
+  });
+
+  card('#c-health', {
+    key: 'health',
+    measures: [
+      { label: 'Caesarean', color: S('--s2'), get: (d) => d.caesarean },
+      { label: 'Preterm', color: S('--s3'), get: (d) => d.preterm },
+      { label: 'Under 2,500 g', color: S('--s4'), get: (d) => d.lowWeight },
+    ],
+    opt: { fmt: fp, axisFmt: fp0, zero: true, endLabels: true, height: 240 },
+  });
 }
-document.querySelectorAll('#tfr-view button').forEach((b) => b.addEventListener('click', () => {
-  tfrView = b.dataset.v;
-  try { localStorage.setItem('nac-trends-tfr', tfrView); } catch (e) {}
-  // redraw everything so the shared hover keeps working across charts
-  renderAll();
+document.querySelectorAll('#view button').forEach((b) => b.addEventListener('click', () => {
+  view = b.dataset.v;
+  saveView();
+  renderAll(); // redraw everything so the shared hover keeps working across charts
 }));
 
 // ---------- load ----------
