@@ -10,7 +10,7 @@ Interactive dashboard of every live birth registered in Spain in 1985, 1995, 200
 - Age of mother and father, also by continent of birth
 - Birth order, caesarean, preterm and low birth weight by mother's age
 - Twins and multiple births by mother's age; complications by mother's age and origin
-- Born alive, died within 24 hours and stillborn, by mother's origin and age (deliveries file, 2025)
+- Born alive, died within 24 hours and stillborn, by mother's origin and age (deliveries file; no origin for 1985 and 1995, nationality for 2006)
 - Births per day by month; gestation × birth weight
 - Boys per 100 girls, by birth order and mother's origin
 - Time between the wedding and a married mother's first birth
@@ -69,6 +69,10 @@ python scripts/build_tfr.py tfr.json 2025=data.json 2015=data-2015.json 2006=dat
 
 # born alive / died within 24 h / stillborn, from the deliveries file (keeps years already in partos.json)
 python scripts/build_partos_json.py md_MNPpartos_2025.txt partos.json
+python scripts/build_partos_json.py "Anonimizado Partos sin causa.A2015" partos.json
+python scripts/build_partos_json.py "PARTOS 2006" partos.json
+python scripts/build_partos_json.py PARTOS.A1995.ANONIMI partos.json
+python scripts/build_partos_json.py PARTOS.A1985.ANONIMI partos.json
 
 # map shapes from a GADM level-2 GeoJSON of Spain
 python scripts/build_provinces_geo.py gadm41_ESP_2.json provinces.geo.json

@@ -873,9 +873,11 @@ function drawPartos() {
     $('#partos-vars').textContent = 'MNP partos · CLASIF1–6';
     return emptyState(el, `The deliveries file for ${state.year} hasn't been added yet.`);
   }
-  const o = state.origin, oTxt = { all: 'all mothers', es: 'mothers born in Spain', ab: 'mothers born abroad' }[o];
+  const basis = P.basis || 'birth', nat = basis === 'nationality', none = basis === 'none';
+  const o = none ? 'all' : state.origin, oTxt = originTxt(o);
   const G = P.groups.all, born = G[0] + G[1];
-  $('#partos-sub').textContent = `Babies by outcome in ${state.year}, from the deliveries file (one record per delivery, every baby counted). All of Spain: the province filter doesn't apply. Mother's age uses the origin filter above (${oTxt}).`;
+  $('#partos-sub').textContent = `Babies by outcome in ${state.year}, from the deliveries file (one record per delivery, every baby counted). All of Spain: the province filter doesn't apply.`
+    + (none ? ` The ${state.year} file doesn't record the mother's origin.` : ` Mother's age uses the origin filter above (${oTxt}).${nat ? ` The ${state.year} file has the mother's nationality, not her country of birth.` : ''}`);
   counts.innerHTML = `<span><b>${fmt(born)}</b> born alive</span><span><b>${fmt(G[1])}</b> of them died within 24 hours</span><span><b>${fmt(G[2])}</b> stillborn</span><span style="color:var(--muted)">${fmt(P.deliveries)} deliveries</span>`;
   const mk = (name, [alive, died, still], extra = {}) => {
     const live = alive + died, all = live + still;
@@ -883,9 +885,9 @@ function drawPartos() {
   };
   const sections = [
     [null, [mk('All babies', G, { strong: true })]],
-    ["By mother's country of birth", [mk('Spain', P.groups.es), mk('Abroad', P.groups.ab),
-      ...['eu', 'af', 'am', 'as'].map((k) => mk(contName(k), P.groups[k], { sub: true }))]],
-    [`By mother's age · ${oTxt}`, P.ageGroups.map((g, i) => mk(g, P.age[o][i]))],
+    ...(none ? [] : [[`By mother's ${nat ? 'nationality' : 'country of birth'}`, [mk(nat ? 'Spanish' : 'Spain', P.groups.es), mk(nat ? 'Foreign' : 'Abroad', P.groups.ab),
+      ...['eu', 'af', 'am', 'as'].map((k) => mk(contName(k), P.groups[k], { sub: true }))]]]),
+    [none ? "By mother's age" : `By mother's age · ${oTxt}`, P.ageGroups.map((g, i) => mk(g, P.age[o][i]))],
   ];
   const rowH = 30, headH = 26, bh = 9;
   let yy = 0;
@@ -921,7 +923,9 @@ function drawPartos() {
         row('95% range, stillborn', `${it.sbCI[0].toFixed(2)}–${it.sbCI[1].toFixed(2)} ‰`)))
       .on('mouseleave', hideTip);
   });
-  $('#partos-vars').textContent = `MNP partos ${state.year} · CLASIF1–6 (stillborn = late fetal death as registered) · EDADM · PAISNXM. Origin is unknown for ${fmt(P.unknownOrigin)} babies, counted in the totals only.`;
+  const pv = { '1980': ['CLASIF1–5', ''], '1996': ['CLASIFI1–7', ' · NACMAD'], '2016': ['CLASIF1–6', ' · PAISNXM'] }[P.layout || '2016'];
+  $('#partos-vars').textContent = `MNP partos ${state.year} · ${pv[0]} (stillborn = late fetal death as registered) · EDADM${pv[1]}.`
+    + (P.unknownOrigin ? ` Origin is unknown for ${fmt(P.unknownOrigin)} babies, counted in the totals only.` : '');
 }
 
 // ---------- 6d. Boys per 100 girls ----------
